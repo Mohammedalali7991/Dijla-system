@@ -1,0 +1,47 @@
+// ==========================================
+// 1. إدارة قاعدة بيانات نظام دجلة (IndexedDB)
+// ==========================================
+
+const db = new Dexie("Dijlah_DB");
+
+// هيكلية الجداول المدمجة بالكامل لدعم المواد، الديون، المبيعات والمستخدمين
+db.version(2).stores({
+    products: 'id, name, min_limit, price, qty', 
+    installments: 'id, customerName, dueDate, amount, status, phone', 
+    invoices: 'id, date, customerName, total, items, syncStatus',
+    syncQueue: 'id, action, timestamp',
+    users: 'phone, password, role', 
+    settings: 'key, value' 
+});
+
+// تهيئة بيانات تجريبية عند التشغيل الأول لضمان عمل الواجهات فوراً
+async function initDatabaseData() {
+    // 1. حساب المدير
+    const userCount = await db.users.count();
+    if (userCount === 0) {
+        await db.users.put({ phone: "07700000000", password: "123", role: "مدير النظام" });
+    }
+    
+    // 2. مواد تجريبية بالمخزن للفحص والتعديل البيعي
+    const prodCount = await db.products.count();
+    if (prodCount === 0) {
+        await db.products.bulkPut([
+            { id: "1001", name: "باب خشب صاج دجلة", min_limit: 2, price: 150000, qty: 15 },
+            { id: "1002", name: "باب ألمنيوم دبل فايبر", min_limit: 3, price: 185000, qty: 8 },
+            { id: "1003", name: "قفل باب إيطالي نخب أول", min_limit: 5, price: 25000, qty: 4 }
+        ]);
+    }
+
+    // 3. ديون تجريبية تستحق اليوم لاختبار النافذة المنبثقة الأبجدية
+    const instCount = await db.installments.count();
+    if (instCount === 0) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        await db.installments.bulkPut([
+            { id: "d1", customerName: "أحمد يونس الموصلي", dueDate: todayStr, amount: 250000, status: "unpaid", phone: "07701234567" },
+            { id: "d2", customerName: "بهاء الدين عمر", dueDate: todayStr, amount: 400000, status: "unpaid", phone: "07509876543" },
+            { id: "d3", customerName: "زياد طارق الخباز", dueDate: todayStr, amount: 150000, status: "unpaid", phone: "07711223344" }
+        ]);
+    }
+}
+initDatabaseData();
+

@@ -1,0 +1,102 @@
+// ==========================================
+// 2. محرك الميزات الاحترافية لنظام دجلة
+// ==========================================
+
+const AppFeatures = {
+    // نظام تسجيل الدخول برقم الهاتف والرمز السري
+    async loginWithPhone(phone, password) {
+        if (!phone || !password) {
+            alert("يرجى إدخال رقم الهاتف ورمز المرور!");
+            return;
+        }
+        const user = await db.users.get(phone);
+        if (user && user.password === password) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-wrapper').style.display = 'flex';
+            
+            // تهيئة بيانات لوحة التحكم وفحص الديون التلقائي الأبجدي فور الدخول
+            setTimeout(() => { 
+                AppFeatures.checkTodayDebts(); 
+                if(typeof loadDashboardData === 'function') loadDashboardData();
+            }, 1000);
+        } else {
+            alert("خطأ في رقم الهاتف أو رمز المرور! الحساب الافتراضي: 07700000000 والرمز: 123");
+        }
+    },
+
+    // جلب وفحص ديون اليوم وترتيب أسماء الزبائن أبجدياً تصاعدياً
+    async checkTodayDebts() {
+        const todayStr = new Date().toISOString().split('T')[0]; 
+        const todayDebts = await db.installments
+            .where('dueDate').equals(todayStr)
+            .filter(item => item.status === 'unpaid')
+            .toArray();
+
+        if (todayDebts.length > 0) {
+            // ترتيب تصاعدي أبجدي محلي دقيق للغة العربية
+            todayDebts.sort((a, b) => a.customerName.localeCompare(b.customerName, 'ar'));
+
+            let listHtml = todayDebts.map(d => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid rgba(255,255,255,0.05); margin-bottom: 5px; background: rgba(0,0,0,0.1); border-radius:6px;">
+                    <span style="font-weight:bold; font-size:14px;">👤 ${d.customerName}</span>
+                    <span style="color:#ffb703; font-weight:bold;">💰 ${Number(d.amount).toLocaleString()} د.ع</span>
+                    <button onclick="AppFeatures.sendWhatsAppReminder('${d.phone}', '${d.customerName}', '${d.amount}')" style="background:#06d6a0; border:none; padding:5px 10px; color:white; border-radius:6px; cursor:pointer; font-size:12px;">
+                        <i class="fab fa-whatsapp"></i> تذكير
+                    </button>
+                </div>
+            `).join('');
+
+            const popup = document.createElement('div');
+            popup.id = "debt-popup";
+            popup.style = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#1c2541; padding:20px; border-radius:15px; border:2px solid #ffb703; z-index:99999; width:90%; max-width:420px; box-shadow:0px 10px 30px rgba(0,0,0,0.6); color:#fff;";
+            popup.innerHTML = `
+                <h3 style="color:#ffb703; margin-bottom:15px; text-align:center; font-size:18px;"><i class="fa-solid fa-bell"></i> مواعيد تسديد الديون لليوم</h3>
+                <div style="max-height:280px; overflow-y:auto; margin-bottom:15px; padding-right:5px;">${listHtml}</div>
+                <button onclick="document.getElementById('debt-popup').remove()" style="width:100%; padding:11px; background:#ef476f; border:none; color:white; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">إغلاق النافذة</button>
+            `;
+            document.body.appendChild(popup);
+        }
+    },
+
+    // إرسال رسالة التذكير بالدين عبر الواتساب (تلقائي أو يدوي بحسب خيار السيرفر المختار من الإعدادات)
+    async sendWhatsAppReminder(phone, customerName, amount) {
+        const modeSetting = await db.settings.get('whatsapp_mode');
+        const isAuto = modeSetting ? modeSetting.value === 'auto' : false;
+
+        const message = `عزيزي الزبون ${customerName}، نود تذكيرك بموعد تسديد القسط المستحق اليوم بمبلغ (${Number(amount).toLocaleString()} دينار). شكراً لتعاملك معنا - معرض دجلة للأبواب والديكور.`;
+        const encodedMsg = encodeURIComponent(message);
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`;
+
+        if (isAuto) {
+            window.open(whatsappUrl, '_blank');
+        } else {
+            if (confirm(`هل تريد فتح الواتساب مباشرة وتوجيه نص تذكير الدين إلى ( ${customerName} )؟`)) {
+                window.open(whatsappUrl, '_blank');
+            }
+        }
+    },
+
+    // تبديل وتطبيق الألوان المتجاوبة بالكامل (الوضع الليلي والنهاري الواضح)
+    toggleTheme(themeName) {
+        const root = document.documentElement;
+        if (themeName === 'light') {
+            root.style.setProperty('--bg-main', '#f4f6f9');
+            root.style.setProperty('--bg-sidebar', '#ffffff');
+            root.style.setProperty('--bg-card', '#ffffff');
+            root.style.setProperty('--bg-card-hover', '#eaeef3');
+            root.style.setProperty('--text-main', '#1a202c');
+            root.style.setProperty('--text-muted', '#718096');
+            root.style.setProperty('--border-color', '#cbd5e1');
+        } else {
+            root.style.setProperty('--bg-main', '#0b132b');
+            root.style.setProperty('--bg-sidebar', '#0d1b2a');
+            root.style.setProperty('--bg-card', '#1c2541');
+            root.style.setProperty('--bg-card-hover', '#222e50');
+            root.style.setProperty('--text-main', '#ffffff');
+            root.style.setProperty('--text-muted', '#8e9aaf');
+            root.style.setProperty('--border-color', '#222e50');
+        }
+        db.settings.put({key: 'theme', value: themeName});
+    }
+};
