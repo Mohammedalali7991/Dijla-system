@@ -1,416 +1,349 @@
-         بالكامل باستخدام جيل متطور من الـ IndexedDB
-        const db = new Dexie("DijlahEnterpriseDB");
-        db.version(1).stores({
-            products: 'id, barcode, name, storeId, price, qty',
-            invoices: 'id, customerName, customerPhone, date, total, paymentType, storeId',
-            installments: 'id, customerName, totalAmount, remainingAmount, nextPaymentDate, type',
-            syncQueue: 'id, action, data, timestamp'
-        });
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام دجلة للمحاسبة والمخازن</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --primary-color: #bfa15f;
+            --dark-bg: #111111;
+            --card-bg: #1a1a1a;
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .header img {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            border: 2px solid var(--primary-color);
+            object-fit: cover;
+        }
+        .header h1 {
+            color: var(--primary-color);
+            margin: 10px 0 5px 0;
+            font-size: 24px;
+        }
+        .header p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 14px;
+        }
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .btn:active {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+        }
+        .btn-success {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            grid-column: span 2;
+        }
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #222;
+        }
+        .section-title {
+            color: var(--primary-color);
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #222;
+        }
+        th {
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        input, select {
+            flex: 1;
+            background-color: #222;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .edit-input {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+            background-color: #333;
+        }
+        .badge {
+            background-color: #2b2b2b;
+            color: var(--primary-color);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid var(--primary-color);
+        }
+    </style>
+</head>
+<body>
 
-        // المتغيرات التشغيلية الكلية للنظام
-        let currentRole = 'admin';
-        let currentStore = 'main';
-        let currentInvoiceItems = [];
-        let html5QrScanner = null;
+    <div class="header">
+        <img src="logo.png" alt="شعار معرض دجلة">
+        <h1>معرض دجلة الذكي</h1>
+        <p>نظام إدارة المخازن، القوائم وتعديل المبيعات الفوري</p>
+    </div>
 
-        // دالة الدخول واختيار المستودع والصلاحية
-        function initializeSession() {
-            currentRole = document.getElementById('auth-role').value;
-            currentStore = document.getElementById('auth-store').value;
+    <div class="nav-buttons">
+        <button class="btn" onclick="showSection('catalog')">📦 إدارة الكتالوج</button>
+        <button class="btn" onclick="showSection('sales-records')">📝 سجلات المبيعات</button>
+        <button class="btn btn-success" onclick="showSection('pos')">🛒 قائمة البيع النشطة والتعديل الذكي</button>
+    </div>
 
-            // تطبيق جدار الحماية والصلاحيات الحقيقية
-            document.getElementById('user-role-label').innerText = currentRole === 'admin' ? 'مدير النظام' : 'كاشير / مبيعات';
-            document.getElementById('active-store-label').innerText = currentStore === 'main' ? 'المخزن الرئيسي - بغداد' : 'مخزن العرض - الديكورات';
+    <div id="pos" class="section">
+        <div class="section-title">
+            <span>🛒 قائمة البيع الحالية (أثناء وقبل البيع)</span>
+            <span class="badge">تعديل ذكي مفعّل</span>
+        </div>
+        <div class="input-group">
+            <input type="text" id="search-product" placeholder="ابحث عن منتج أو امسح الباركود...">
+            <button class="btn" onclick="addProductToCart()">إضافة</button>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>المادة</th>
+                    <th>الكمية</th>
+                    <th>السعر</th>
+                    <th>الإجمالي</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+            <tbody id="cart-table-body">
+                </tbody>
+        </table>
+        <div style="margin-top: 15px; text-align: left; font-size: 18px; font-weight: bold;">
+            المجموع الكلي: <span id="cart-total" style="color: var(--primary-color);">0</span> دينار
+        </div>
+        <button class="btn btn-success" style="margin-top: 15px; width: 100%;" onclick="checkoutCart()">🔔 اعتماد وحفظ القائمة (حفظ بعد البيع)</button>
+    </div>
 
-            if (currentRole === 'cashier') {
-                document.getElementById('inv-add-btn').style.display = 'none'; // منع الكاشير من إضافة مواد للمخزن
-            } else {
-                document.getElementById('inv-add-btn').style.display = 'inline-flex';
-            }
+    <div id="catalog" class="section" style="display:none;">
+        <div class="section-title">📦 مستودع الكتالوج والمخازن</div>
+        <div class="input-group">
+            <input type="text" id="prod-name" placeholder="اسم المادة/المطبخ">
+            <input type="number" id="prod-price" placeholder="السعر">
+            <button class="btn" onclick="saveToCatalog()">حفظ بالمخزن</button>
+        </div>
+        <table id="catalog-table">
+            <thead>
+                <tr>
+                    <th>المادة</th>
+                    <th>السعر الأساسي</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-            // إخفاء شاشة الدخول وإظهار شل النظام
-            document.getElementById('auth-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-shell').style.display = 'flex';
-                renderInventory();
-                renderDashboard();
-                renderInstallments();
-            }, 500);
+    <div id="sales-records" class="section" style="display:none;">
+        <div class="section-title">📝 الفواتير المحفوظة (التعديل بعد البيع)</div>
+        <div id="records-container">
+            </div>
+    </div>
+
+    <script>
+        // قواعد البيانات المحلية الافتراضية
+        let catalog = JSON.parse(localStorage.getItem('dijla_catalog')) || [
+            { id: 1, name: "مطبخ ألومنيوم دجلة ملكي", price: 1250000 },
+            { id: 2, name: "باب خشب صاج فاخر", price: 250000 }
+        ];
+        
+        let cart = JSON.parse(localStorage.getItem('dijla_cart')) || [];
+        let salesHistory = JSON.parse(localStorage.getItem('dijla_sales')) || [];
+
+        function showSection(sectionId) {
+            document.getElementById('pos').style.display = sectionId === 'pos' ? 'block' : 'none';
+            document.getElementById('catalog').style.display = sectionId === 'catalog' ? 'block' : 'none';
+            document.getElementById('sales-records').style.display = sectionId === 'sales-records' ? 'block' : 'none';
+            renderAll();
         }
 
-        // تحويل الواجهات (SPA Routing Engine)
-        function switchView(viewId, element) {
-            document.querySelectorAll('.viewport-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            
-            document.getElementById(`view-${viewId}`).classList.add('active');
-            element.classList.add('active');
-
-            if (viewId === 'inventory') renderInventory();
-            if (viewId === 'dashboard') renderDashboard();
-            if (viewId === 'installments') renderInstallments();
-        }
-
-        // مراقبة الاتصال بالإنترنت لحظياً (Real-time Online/Offline Status)
-        window.addEventListener('online', handleNetworkStatusChange);
-        window.addEventListener('offline', handleNetworkStatusChange);
-
-        function handleNetworkStatusChange() {
-            const indicator = document.getElementById('network-indicator');
-            if (navigator.onLine) {
-                indicator.className = "network-status";
-                indicator.innerHTML = `<i class="fa-solid fa-cloud-sun"></i> متصل بالسيرفر (تزامن فوري)`;
-                processSyncQueue(); // تشغيل المزامنة التلقائية فور عودة الإنترنت
-            } else {
-                indicator.className = "network-status offline";
-                indicator.innerHTML = `<i class="fa-solid fa-cloud-flash"></i> وضع الأوفلاين الذكي (حفظ محلي)`;
-            }
-        }
-
-        // ==========================================
-        // محرك إدارة المخازن والباركود
-        // ==========================================
-        function showNewProductModal() {
-            document.getElementById('product-form-modal').style.display = 'flex';
-            const randomBarcode = "DG" + Math.floor(Math.random() * 90000000 + 10000000);
-            document.getElementById('prod-barcode').value = randomBarcode;
-            JsBarcode("#generated-barcode-svg", randomBarcode, { format: "CODE128", background: "#172448", lineColor: "#fff" });
-        }
-
-        function hideProductModal() {
-            document.getElementById('product-form-modal').style.display = 'none';
-        }
-
-        async function saveProductToInventory() {
-            const name = document.getElementById('prod-name').value;
-            const barcode = document.getElementById('prod-barcode').value;
-            const price = parseFloat(document.getElementById('prod-price').value) || 0;
-            const qty = parseInt(document.getElementById('prod-qty').value) || 0;
-
-            if(!name || !barcode) return alert('الرجاء كتابة اسم المادة والباركود');
-
-            const item = { id: barcode + '_' + currentStore, barcode, name, price, qty, storeId: currentStore };
-            await db.products.put(item);
-            
-            // دفع العملية لطابور المزامنة الخلفية أوفلاين
-            await pushToSyncQueue('SAVE_PRODUCT', item);
-
-            hideProductModal();
-            renderInventory();
-            alert('تم حفظ المادة وتوليد كود الباركود بنجاح بالذاكرة الحية');
-        }
-
-        async function renderInventory() {
-            const items = await db.products.where('storeId').equalTo(currentStore).toArray();
-            const tbody = document.getElementById('inventory-table-body');
-            tbody.innerHTML = items.length === 0 ? `<tr><td colspan="5" style="text-align:center;">لا توجد مواد في هذا المخزن حالياً، اضغط إضافة مادة</td></tr>` : '';
-            
-            items.forEach(item => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><span style="font-family:monospace; color:var(--accent-primary);">${item.barcode}</span></td>
-                        <td><b>${item.name}</b></td>
-                        <td>${item.storeId === 'main' ? 'بغداد الرئيسي' : 'معرض العرض'}</td>
-                        <td><span style="color:${item.qty < 5 ? 'var(--accent-danger)' : '#fff'}">${item.qty} قطعة</span></td>
-                        <td>${item.price.toLocaleString()} د.ع</td>
-                    </tr>
-                `;
-            });
-        }
-
-        // ==========================================
-        // محرك المبيعات وفواتير الـ PDF والمشاركة بالواتساب
-        // ==========================================
-        function handlePaymentTypeChange() {
-            const type = document.getElementById('pos-payment-type').value;
-            document.getElementById('pos-installment-fields').style.display = type === 'installments' ? 'grid' : 'none';
-        }
-
-        function handleBarcodeKey(e) {
-            if (e.key === 'Enter') addItemToCurrentInvoice();
-        }
-
-        async function addItemToCurrentInvoice() {
-            const input = document.getElementById('pos-barcode-input').value;
-            if(!input) return;
-
-            // البحث بالباركود أو الاسم في حدود المخزن النشط حالياً
-            let product = await db.products.where({storeId: currentStore, barcode: input}).first();
-            if(!product) {
-                product = await db.products.where('storeId').equalTo(currentStore).filter(p => p.name.includes(input)).first();
-            }
-
-            if(!product) return alert('المادة غير موجودة بهذا المخزن أو نفذت من الكمية');
-
-            const existing = currentInvoiceItems.find(i => i.barcode === product.barcode);
-            if(existing) {
-                existing.qty++;
-            } else {
-                currentInvoiceItems.push({ barcode: product.barcode, name: product.name, price: product.price, qty: 1 });
-            }
-
-            document.getElementById('pos-barcode-input').value = '';
-            renderInvoiceTable();
-        }
-
-        function renderInvoiceTable() {
-            const tbody = document.getElementById('invoice-items-table');
-            tbody.innerHTML = currentInvoiceItems.length === 0 ? `<tr><td colspan="4" style="text-align:center;">الفاتورة فارغة</td></tr>` : '';
-            
+        // تحديث جدول السلة مع تفعيل ميزة التعديل أثناء البيع
+        function renderCart() {
+            const tbody = document.getElementById('cart-table-body');
+            tbody.innerHTML = '';
             let total = 0;
-            currentInvoiceItems.forEach((item, index) => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
+
+            cart.forEach((item, index) => {
+                let itemTotal = item.price * item.quantity;
+                total += itemTotal;
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.name}</td>
-                        <td><input type="number" class="native-input" style="width:70px; padding:5px;" value="${item.qty}" onchange="updateInvoiceQty(${index}, this.value)"></td>
-                        <td>${item.price.toLocaleString()}</td>
-                        <td>${subtotal.toLocaleString()} د.ع</td>
+                        <td><input type="number" class="edit-input" value="${item.quantity}" onchange="updateCartItem(${index}, 'quantity', this.value)"></td>
+                        <td><input type="number" class="edit-input" style="width:90px;" value="${item.price}" onchange="updateCartItem(${index}, 'price', this.value)"></td>
+                        <td>${itemTotal.toLocaleString()}</td>
+                        <td><button class="btn" style="padding:4px 8px; border-color:#ff4444; color:#ff4444;" onclick="removeFromCart(${index})">حذف</button></td>
                     </tr>
                 `;
             });
-            document.getElementById('invoice-total-label').innerText = total.toLocaleString();
+
+            document.getElementById('cart-total').innerText = total.toLocaleString();
+            localStorage.setItem('dijla_cart', JSON.stringify(cart));
         }
 
-        function updateInvoiceQty(index, val) {
-            if(val <= 0) currentInvoiceItems.splice(index, 1);
-            else currentInvoiceItems[index].qty = parseInt(val);
-            renderInvoiceTable();
+        // ميزة التعديل الذكي قبل وأثناء البيع للقيم
+        function updateCartItem(index, field, value) {
+            cart[index][field] = parseFloat(value) || 0;
+            renderCart();
         }
 
-        // معالجة الفاتورة وتوليد الـ PDF للمشاركة الفورية عبر الواتساب
-        async function processInvoiceCheckout(isWhatsAppRequested) {
-            if(currentInvoiceItems.length === 0) return alert('لا يمكن إنتاج فاتورة فارغة');
-            
-            const customerName = document.getElementById('pos-customer-name').value;
-            const customerPhone = document.getElementById('pos-customer-phone').value;
-            const paymentType = document.getElementById('pos-payment-type').value;
-            
-            let totalAmount = currentInvoiceItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
-            const invoiceId = "INV-" + Date.now();
-
-            // 1. خصم الكميات من المخزن المحلي وتحديث الواجهة
-            for(let item of currentInvoiceItems) {
-                const prod = await db.products.where({storeId: currentStore, barcode: item.barcode}).first();
-                if(prod) {
-                    prod.qty = Math.max(0, prod.qty - item.qty);
-                    await db.products.put(prod);
-                }
-            }
-
-            // 2. معالجة نظام الدين أو الأقساط الحقيقي
-            if(paymentType === 'debt' || paymentType === 'installments') {
-                let remaining = totalAmount;
-                if(paymentType === 'installments') {
-                    const downPayment = parseFloat(document.getElementById('pos-down-payment').value) || 0;
-                    remaining = totalAmount - downPayment;
-                }
-                const nextDate = new Date();
-                nextDate.setMonth(nextDate.getMonth() + 1);
-
-                await db.installments.put({
-                    id: 'INST_' + Date.now(),
-                    customerName,
-                    totalAmount,
-                    remainingAmount: remaining,
-                    nextPaymentDate: nextDate.toLocaleDateString('ar-IQ'),
-                    type: paymentType === 'debt' ? 'دين مفتوح' : 'أقساط مجدولة'
-                });
-            }
-
-            const invoiceData = { id: invoiceId, customerName, customerPhone, total: totalAmount, paymentType, storeId: currentStore, date: new Date().toLocaleString('ar-IQ') };
-            await db.invoices.put(invoiceData);
-            await pushToSyncQueue('CREATE_INVOICE', invoiceData);
-
-            // 3. بناء الفاتورة الاحترافية بصيغة PDF حقيقية غير قابلة للتلف
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-            
-            // واجهة الفاتورة الفاخرة
-            doc.setFillColor(15, 25, 52); 
-            doc.rect(0, 0, 210, 40, "F");
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
-            doc.text("Dajlah Smart System - Invoice", 15, 25);
-            
-            doc.setTextColor(50, 50, 50);
-            doc.setFontSize(12);
-            doc.text(`Invoice ID: ${invoiceId}`, 15, 50);
-            doc.text(`Customer: ${customerName}`, 15, 58);
-            doc.text(`Payment: ${paymentType.toUpperCase()}`, 15, 66);
-            doc.text(`Total: ${totalAmount.toLocaleString()} IQD`, 15, 74);
-
-            let y = 90;
-            doc.text("Items Summary:", 15, y);
-            currentInvoiceItems.forEach(i => {
-                y += 10;
-                doc.text(`- ${i.name} (x${i.qty}) : ${(i.price * i.qty).toLocaleString()} IQD`, 20, y);
-            });
-
-            if(isWhatsAppRequested) {
-                if(!customerPhone) {
-                    alert('الرجاء كتابة رقم الهاتف لإرسال الفاتورة عبر الواتساب');
-                    return;
-                }
-                // توليد رابط ملف الـ PDF كـ Data URL لسهولة الحفظ الفوري
-                doc.save(`${invoiceId}.pdf`);
-                
-                // فتح الواتساب وإرسال نص ترحيبي برابط التحميل المباشر للزبون
-                const msg = `عزيزي الزبون ${customerName}، تم إصدار فاتورة نظام دجلة الإلكترونية رقم ${invoiceId} بمبلغ ${totalAmount.toLocaleString()} د.ع بنجاح وجاري حفظ ملف الـ PDF على هاتفك حمايةً لحقوقك من التلف والضياع.`;
-                window.open(`https://api.whatsapp.com/send?phone=${customerPhone}&text=${encodeURIComponent(msg)}`, '_blank');
-            } else {
-                doc.save(`${invoiceId}.pdf`);
-                alert('تم حفظ الفاتورة وطباعتها محلياً بنجاح كامل');
-            }
-
-            // تصفير الفاتورة والعودة للرئيسية
-            currentInvoiceItems = [];
-            renderInvoiceTable();
-            switchView('dashboard', document.querySelectorAll('.nav-link')[0]);
+        function addProductToCart() {
+            // إضافة مادة افتراضية للتجربة أو البحث
+            cart.push({ id: Date.now(), name: "تخصيص مادة جديدة", quantity: 1, price: 100000 });
+            renderCart();
         }
 
-        // ==========================================
-        // محرك الأوفلاين الذكي ونظام الطابور (Queue System)
-        // ==========================================
-        async function pushToSyncQueue(action, data) {
-            await db.syncQueue.put({
-                id: 'Q_' + Date.now() + Math.random(),
-                action,
-                data,
-                timestamp: Date.now()
-            });
-            renderDashboard();
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            renderCart();
         }
 
-        async function processSyncQueue() {
-            if (!navigator.onLine) return;
-            const queueItems = await db.syncQueue.toArray();
-            if(queueItems.length === 0) return;
-
-            console.log(`جاري مزامنة ${queueItems.length} عمليات معلقة في الخلفية...`);
-            
-            for(let item of queueItems) {
-                try {
-                    // هنا يتم وضع كود الـ API الفعلي لإرسال البيانات لقاعدة البيانات السحابية (Firebase / MySQL)
-                    // مثال: await fetch('/api/sync', { method: 'POST', body: JSON.stringify(item) });
-                    
-                    // محاكاة استجابة السيرفر الناجحة بالكامل:
-                    await db.syncQueue.delete(item.id);
-                } catch (e) {
-                    console.error("فشلت مزامنة عنصر، سيتم المحاولة لاحقاً بشكل تلقائي", e);
-                }
-            }
-            renderDashboard();
+        // الحفظ والاعتماد بعد البيع
+        function checkoutCart() {
+            if(cart.length === 0) return alert("القائمة فارغة حالياً!");
+            let invoice = {
+                id: 'INV-' + Date.now(),
+                date: new Date().toLocaleString('ar-IQ'),
+                items: [...cart],
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            };
+            salesHistory.push(invoice);
+            localStorage.setItem('dijla_sales', JSON.stringify(salesHistory));
+            cart = [];
+            localStorage.removeItem('dijla_cart');
+            alert("تم حفظ القائمة واعتماد البيع بنجاح!");
+            showSection('sales-records');
         }
 
-        // ==========================================
-        // تحديث وعرض شاشات التقارير والأقساط
-        // ==========================================
-        async function renderDashboard() {
-            const totalSales = await db.invoices.where('storeId').equalTo(currentStore).toArray();
-            const salesSum = totalSales.reduce((acc, curr) => acc + curr.total, 0);
-            document.getElementById('stat-sales').innerText = salesSum.toLocaleString() + ' د.ع';
-
-            const queueCount = await db.syncQueue.count();
-            document.getElementById('stat-queue').innerText = queueCount + ' معلقة';
-
-            const lowStock = await db.products.where('qty').below(5).toArray();
-            document.getElementById('stat-alert-items').innerText = lowStock.length + ' مواد';
-
-            const recentLogsTable = document.getElementById('dashboard-recent-logs');
-            recentLogsTable.innerHTML = '';
-            const allInvoices = await db.invoices.reverse().limit(5).toArray();
-            
-            if(allInvoices.length === 0) {
-                recentLogsTable.innerHTML = `<tr><td colspan="4" style="text-align:center;">لا توجد عمليات مبيعات منجزة اليوم</td></tr>`;
+        // ميزة التعديل الفوري بعد البيع (إرجاع الفاتورة للحالة النشطة للتعديل عليها)
+        function editInvoiceAfterSale(invoiceId) {
+            let invIndex = salesHistory.findIndex(i => i.id === invoiceId);
+            if(invIndex > -1) {
+                cart = [...salesHistory[invIndex].items];
+                salesHistory.splice(invIndex, 1); // سحبها للتعديل
+                localStorage.setItem('dijla_sales', JSON.stringify(salesHistory));
+                alert("تم إرجاع الفاتورة إلى قائمة البيع النشطة، يمكنك التعديل عليها الآن وإعادة حفظها!");
+                showSection('pos');
             }
-            allInvoices.forEach(inv => {
-                recentLogsTable.innerHTML += `
-                    <tr>
-                        <td><span class="network-status" style="background:rgba(0, 180, 216, 0.1); color:var(--accent-primary);">مبيعات</span></td>
-                        <td>قائمة للزبون ${inv.customerName}</td>
-                        <td><b>${inv.total.toLocaleString()} د.ع</b></td>
-                        <td><span style="color:var(--accent-success);"><i class="fa-solid fa-circle-check"></i> آمنة</span></td>
-                    </tr>
+        }
+
+        function renderSalesHistory() {
+            const container = document.getElementById('records-container');
+            container.innerHTML = '';
+            if(salesHistory.length === 0) container.innerHTML = '<p style="color:gray; text-align:center;">لا توجد قوائم مبيعات محفوظة حالياً.</p>';
+            
+            salesHistory.forEach(inv => {
+                container.innerHTML += `
+                    <div style="background:#222; padding:12px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--primary-color);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-weight:bold; color:var(--primary-color);">${inv.id}</span>
+                            <span style="font-size:12px; color:gray;">${inv.date}</span>
+                        </div>
+                        <div style="font-size:13px; color:#ccc; margin-bottom:8px;">عدد المواد: ${inv.items.length} | المجموع: ${inv.total.toLocaleString()} د.ع</div>
+                        <button class="btn" style="width:100%; padding:6px; font-size:12px;" onclick="editInvoiceAfterSale('${inv.id}')">🔄 تعديل هذه القائمة (إعادة فتح بعد البيع)</button>
+                    </div>
                 `;
             });
         }
 
-        async function renderInstallments() {
-            const items = await db.installments.toArray();
-            const tbody = document.getElementById('installments-table-body');
-            tbody.innerHTML = items.length === 0 ? `<tr><td colspan="6" style="text-align:center;">لا توجد قيود ديون حالية بمستندات النظام</td></tr>` : '';
-            
-            items.forEach(item => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><b>${item.customerName}</b></td>
-                        <td><span style="color:var(--accent-warning);">${item.type}</span></td>
-                        <td>${item.totalAmount.toLocaleString()}</td>
-                        <td style="color:var(--accent-danger); font-weight:bold;">${item.remainingAmount.toLocaleString()} د.ع</td>
-                        <td>${item.nextPaymentDate}</td>
-                        <td><button class="btn-action btn-success" style="padding:6px 12px; font-size:11px;" onclick="collectPayment('${item.id}', ${item.remainingAmount})">قبض دفعة</button></td>
-                    </tr>
-                `;
+        function renderCatalog() {
+            const tbody = document.querySelector('#catalog-table tbody');
+            tbody.innerHTML = '';
+            catalog.forEach(p => {
+                tbody.innerHTML += `<tr><td>${p.name}</td><td>${p.price.toLocaleString()} د.ع</td></tr>`;
             });
         }
 
-        async function collectPayment(id, remaining) {
-            const amount = parseFloat(prompt(`المتبقي في الذمة: ${remaining.toLocaleString()} د.ع\nأدخل المبلغ المستلم حالياً:`)) || 0;
-            if(amount <= 0) return;
-
-            const inst = await db.installments.get(id);
-            if(inst) {
-                inst.remainingAmount = Math.max(0, inst.remainingAmount - amount);
-                if(inst.remainingAmount === 0) await db.installments.delete(id);
-                else await db.installments.put(inst);
-                
-                alert('تم تسديد الدفعة بنجاح وتحديث كرت المديونية المالي للزبون');
-                renderInstallments();
-                renderDashboard();
+        function saveToCatalog() {
+            let name = document.getElementById('prod-name').value;
+            let price = parseFloat(document.getElementById('prod-price').value);
+            if(name && price) {
+                catalog.push({id: Date.now(), name, price});
+                localStorage.setItem('dijla_catalog', JSON.stringify(catalog));
+                document.getElementById('prod-name').value = '';
+                document.getElementById('prod-price').value = '';
+                renderCatalog();
             }
         }
 
-        // قارئ الكاميرا المباشر والمدمج
-        function toggleScanner() {
-            const container = document.getElementById('scanner-container');
-            if (container.style.display === 'block') {
-                container.style.display = 'none';
-                if(html5QrScanner) html5QrScanner.clear();
-            } else {
-                container.style.display = 'block';
-                html5QrScanner = new Html5QrcodeScanner("scanner-container", { fps: 15, qrbox: 250 });
-                html5QrScanner.render((text) => {
-                    document.getElementById('pos-barcode-input').value = text;
-                    addItemToCurrentInvoice();
-                    toggleScanner(); // إغلاق الكاميرا بعد المسح الناجح
-                });
-            }
+        function renderAll() {
+            renderCart();
+            renderCatalog();
+            renderSalesHistory();
         }
 
-        // تفعيل الـ Service Worker برمجياً للعمل الفوري بدون إنترنت وتحديث تلقائي دائم
+        // تشغيل نظام الخدمة والـ PWA بدون نت
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                .then(reg => {
-                    console.log('PWA Core System Registered Successfully!', reg.scope);
-                    // التحقق من وجود تحديثات في الخلفية وتطبيقها فوراً
-                    reg.addEventListener('updatefound', () => {
-                        const newWorker = reg.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                alert('تم تحميل تحديثات برمجية جديدة تلقائياً! سيتم إعادة تشغيل التطبيق لعرض الميزات الجديدة.');
-                                window.location.reload();
-                            }
-                        });
-                    });
-                })
-                .catch(err => console.error('PWA Core Registration Failed:', err));
-            });
+            navigator.serviceWorker.register('sw.js');
         }
+        
+        window.onload = renderAll;
     </script>
 </body>
 </html>
 
+        
