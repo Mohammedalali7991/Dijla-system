@@ -1,8 +1,8 @@
 {
-  "name": "نظام دجلة للمحاسبة والمخازن",
+  "name": "نظام دجلة لنظام",
   "short_name": "نظام دجلة",
   "description": "نظام ذكي لتكنولوجيا المعلومات، المخازن، المبيعات وقوائم معرض دجلة يعمل بالكامل بدون إنترنت",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#bfa15f",
@@ -12,7 +12,13 @@
       "src": "ec2fe0f0-267d-47f1-a8b3-e2f9de9b0dcd.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "ec2fe0f0-267d-47f1-a8b3-e2f9de9b0dcd.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
