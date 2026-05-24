@@ -1,0 +1,18 @@
+{
+  "short_name": "Dijlah",
+  "name": "نظام دجلة للمحاسبة والمخازن",
+  "description": "نظام ذكي متكامل لإدارة المحاسبة، المخازن، المبيعات وقوائم معرض دجلة يعمل بالكامل بدون إنترنت.",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/5494/5494541.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#0b132b",
+  "theme_color": "#0d1b2a",
+  "display": "standalone",
+  "orientation": "portrait"
+}
