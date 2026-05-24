@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام دجلة للمحاسبة والمخازن</title>
     <link rel="manifest" href="manifest.json">
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary-color: #bfa15f;
@@ -125,6 +127,9 @@
             padding: 5px;
             text-align: center;
             background-color: #333;
+            color: #fff;
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
         }
         .badge {
             background-color: #2b2b2b;
@@ -139,211 +144,244 @@
 <body>
 
     <div class="header">
-        <img src="logo.png" alt="شعار معرض دجلة">
+        <img src="ec2fe0f0-267d-47f1-a8b3-e2f9de9b0dcd.png" alt="شعار معرض دجلة الفخم">
         <h1>معرض دجلة الذكي</h1>
-        <p>نظام إدارة المخازن، القوائم وتعديل المبيعات الفوري</p>
+        <p>إدارة المخازن، الفواتير المحفوظة، وقوائم البيع المرنة</p>
     </div>
 
     <div class="nav-buttons">
-        <button class="btn" onclick="showSection('catalog')">📦 إدارة الكتالوج</button>
-        <button class="btn" onclick="showSection('sales-records')">📝 سجلات المبيعات</button>
-        <button class="btn btn-success" onclick="showSection('pos')">🛒 قائمة البيع النشطة والتعديل الذكي</button>
+        <button class="btn" onclick="switchView('dashboard')">📊 لوحة التحكم</button>
+        <button class="btn" onclick="switchView('inventory')">📦 إدارة المستودع</button>
+        <button class="btn btn-success" onclick="switchView('pos')">🛒 قائمة البيع النشطة والتعديل الفوري</button>
     </div>
 
-    <div id="pos" class="section">
+    <div id="dashboard-view" class="section">
+        <div class="section-title">📊 حالة النظام وسجلات المبيعات المعتمدة</div>
+        <div style="margin-bottom: 15px; font-size: 14px; color: var(--text-muted);">
+            مجموع المبيعات المعتمدة: <span id="total-sales-amount" style="color:var(--primary-color); font-weight:bold;">0</span> د.ع
+        </div>
+        <div id="recent-invoices-list">
+            </div>
+    </div>
+
+    <div id="inventory-view" class="section" style="display:none;">
+        <div class="section-title">📦 إدارة مواد المستودع والكتالوج</div>
+        <div class="input-group">
+            <input type="text" id="prod-name" placeholder="اسم المادة">
+            <input type="number" id="prod-price" placeholder="السعر">
+            <input type="text" id="prod-barcode" placeholder="الباركود (تلقائي أو ممسوح)">
+            <button class="btn" onclick="saveNewProduct()">حفظ للمخزن</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>المادة</th>
+                    <th>الباركود</th>
+                    <th>السعر</th>
+                </tr>
+            </thead>
+            <tbody id="inventory-table-body"></tbody>
+        </table>
+    </div>
+
+    <div id="pos-view" class="section" style="display:none;">
         <div class="section-title">
             <span>🛒 قائمة البيع الحالية (أثناء وقبل البيع)</span>
-            <span class="badge">تعديل ذكي مفعّل</span>
+            <span class="badge">التعديل الذكي نشط</span>
         </div>
         <div class="input-group">
-            <input type="text" id="search-product" placeholder="ابحث عن منتج أو امسح الباركود...">
-            <button class="btn" onclick="addProductToCart()">إضافة</button>
+            <input type="text" id="pos-barcode-input" placeholder="امسح باركود أو اكتب اسم المادة لوضعها بالسلة...">
+            <button class="btn" onclick="addProductToCartManual()">إضافة</button>
         </div>
         
         <table>
             <thead>
                 <tr>
                     <th>المادة</th>
-                    <th>الكمية</th>
-                    <th>السعر</th>
+                    <th>الكمية (تعديل مباشر)</th>
+                    <th>السعر (تعديل مباشر)</th>
                     <th>الإجمالي</th>
                     <th>إجراء</th>
                 </tr>
             </thead>
-            <tbody id="cart-table-body">
+            <tbody id="invoice-items-table">
                 </tbody>
         </table>
-        <div style="margin-top: 15px; text-align: left; font-size: 18px; font-weight: bold;">
-            المجموع الكلي: <span id="cart-total" style="color: var(--primary-color);">0</span> دينار
-        </div>
-        <button class="btn btn-success" style="margin-top: 15px; width: 100%;" onclick="checkoutCart()">🔔 اعتماد وحفظ القائمة (حفظ بعد البيع)</button>
-    </div>
 
-    <div id="catalog" class="section" style="display:none;">
-        <div class="section-title">📦 مستودع الكتالوج والمخازن</div>
-        <div class="input-group">
-            <input type="text" id="prod-name" placeholder="اسم المادة/المطبخ">
-            <input type="number" id="prod-price" placeholder="السعر">
-            <button class="btn" onclick="saveToCatalog()">حفظ بالمخزن</button>
-        </div>
-        <table id="catalog-table">
-            <thead>
-                <tr>
-                    <th>المادة</th>
-                    <th>السعر الأساسي</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <div id="sales-records" class="section" style="display:none;">
-        <div class="section-title">📝 الفواتير المحفوظة (التعديل بعد البيع)</div>
-        <div id="records-container">
+        <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
+            <input type="text" id="pos-customer-name" placeholder="اسم العميل (اختياري)" style="margin-bottom:10px; width:95%;">
+            <div style="font-size: 18px; font-weight: bold; text-align: left; margin-bottom:10px;">
+                المجموع الكلي: <span id="invoice-total-label" style="color: var(--primary-color);">0</span> د.ع
             </div>
+            <button class="btn btn-success" style="width: 100%;" onclick="checkoutCurrentInvoice()">🔔 اعتماد وحفظ القائمة وطباعة PDF</button>
+        </div>
     </div>
 
     <script>
-        // قواعد البيانات المحلية الافتراضية
-        let catalog = JSON.parse(localStorage.getItem('dijla_catalog')) || [
-            { id: 1, name: "مطبخ ألومنيوم دجلة ملكي", price: 1250000 },
-            { id: 2, name: "باب خشب صاج فاخر", price: 250000 }
-        ];
-        
-        let cart = JSON.parse(localStorage.getItem('dijla_cart')) || [];
-        let salesHistory = JSON.parse(localStorage.getItem('dijla_sales')) || [];
+        // إعداد قاعدة البيانات المحلية المتقدمة لضمان عمل البرنامج بدون إنترنت
+        const db = new Dexie("DijlahEnterpriseDB");
+        db.version(1).stores({
+            products: "++id, barcode, name, price",
+            invoices: "++id, invoiceId, customerName, date, items, total"
+        });
 
-        function showSection(sectionId) {
-            document.getElementById('pos').style.display = sectionId === 'pos' ? 'block' : 'none';
-            document.getElementById('catalog').style.display = sectionId === 'catalog' ? 'block' : 'none';
-            document.getElementById('sales-records').style.display = sectionId === 'sales-records' ? 'block' : 'none';
-            renderAll();
+        let currentInvoiceItems = [];
+
+        function switchView(view) {
+            document.getElementById('dashboard-view').style.display = view === 'dashboard' ? 'block' : 'none';
+            document.getElementById('inventory-view').style.display = view === 'inventory' ? 'block' : 'none';
+            document.getElementById('pos-view').style.display = view === 'pos' ? 'block' : 'none';
+            if(view === 'inventory') renderInventory();
+            if(view === 'dashboard') renderDashboard();
         }
 
-        // تحديث جدول السلة مع تفعيل ميزة التعديل أثناء البيع
-        function renderCart() {
-            const tbody = document.getElementById('cart-table-body');
+        // عمليات المستودع
+        async function saveNewProduct() {
+            let name = document.getElementById('prod-name').value;
+            let price = parseFloat(document.getElementById('prod-price').value) || 0;
+            let barcode = document.getElementById('prod-barcode').value || 'BC-' + Date.now();
+            
+            if(name) {
+                await db.products.add({ barcode, name, price });
+                document.getElementById('prod-name').value = '';
+                document.getElementById('prod-price').value = '';
+                document.getElementById('prod-barcode').value = '';
+                renderInventory();
+                alert("تم حفظ المادة للمستودع بنجاح!");
+            }
+        }
+
+        async function renderInventory() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            let prods = await db.products.toArray();
+            prods.forEach(p => {
+                tbody.innerHTML += `<tr><td>${p.name}</td><td>${p.barcode}</td><td>${p.price.toLocaleString()} د.ع</td></tr>`;
+            });
+        }
+
+        // سلة البيع وقراءة الباركود/البحث المباشر
+        async function addProductToCartManual() {
+            let val = document.getElementById('pos-barcode-input').value;
+            if(!val) return;
+            
+            let product = await db.products.where('barcode').equals(val).or('name').substringIgnoreCase(val).first();
+            if(product) {
+                currentInvoiceItems.push({ barcode: product.barcode, name: product.name, price: product.price, quantity: 1 });
+            } else {
+                currentInvoiceItems.push({ barcode: 'CUSTOM', name: val, price: 100000, quantity: 1 });
+            }
+            document.getElementById('pos-barcode-input').value = '';
+            renderInvoiceTable();
+        }
+
+        function renderInvoiceTable() {
+            const tbody = document.getElementById('invoice-items-table');
             tbody.innerHTML = '';
             let total = 0;
 
-            cart.forEach((item, index) => {
-                let itemTotal = item.price * item.quantity;
-                total += itemTotal;
-
+            currentInvoiceItems.forEach((item, index) => {
+                let subtotal = item.price * item.quantity;
+                total += subtotal;
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.name}</td>
                         <td><input type="number" class="edit-input" value="${item.quantity}" onchange="updateCartItem(${index}, 'quantity', this.value)"></td>
                         <td><input type="number" class="edit-input" style="width:90px;" value="${item.price}" onchange="updateCartItem(${index}, 'price', this.value)"></td>
-                        <td>${itemTotal.toLocaleString()}</td>
-                        <td><button class="btn" style="padding:4px 8px; border-color:#ff4444; color:#ff4444;" onclick="removeFromCart(${index})">حذف</button></td>
+                        <td>${subtotal.toLocaleString()}</td>
+                        <td><button class="btn" style="padding:4px 8px; border-color:#ff4444; color:#ff4444;" onclick="removeItemFromCart(${index})">حذف</button></td>
                     </tr>
                 `;
             });
-
-            document.getElementById('cart-total').innerText = total.toLocaleString();
-            localStorage.setItem('dijla_cart', JSON.stringify(cart));
+            document.getElementById('invoice-total-label').innerText = total.toLocaleString();
         }
 
-        // ميزة التعديل الذكي قبل وأثناء البيع للقيم
+        // ميزة التعديل الذكي قبل وأثناء البيع للقيم والأسعار
         function updateCartItem(index, field, value) {
-            cart[index][field] = parseFloat(value) || 0;
-            renderCart();
+            currentInvoiceItems[index][field] = parseFloat(value) || 0;
+            renderInvoiceTable();
         }
 
-        function addProductToCart() {
-            // إضافة مادة افتراضية للتجربة أو البحث
-            cart.push({ id: Date.now(), name: "تخصيص مادة جديدة", quantity: 1, price: 100000 });
-            renderCart();
+        function removeItemFromCart(index) {
+            currentInvoiceItems.splice(index, 1);
+            renderInvoiceTable();
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            renderCart();
-        }
-
-        // الحفظ والاعتماد بعد البيع
-        function checkoutCart() {
-            if(cart.length === 0) return alert("القائمة فارغة حالياً!");
-            let invoice = {
-                id: 'INV-' + Date.now(),
-                date: new Date().toLocaleString('ar-IQ'),
-                items: [...cart],
-                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-            };
-            salesHistory.push(invoice);
-            localStorage.setItem('dijla_sales', JSON.stringify(salesHistory));
-            cart = [];
-            localStorage.removeItem('dijla_cart');
-            alert("تم حفظ القائمة واعتماد البيع بنجاح!");
-            showSection('sales-records');
-        }
-
-        // ميزة التعديل الفوري بعد البيع (إرجاع الفاتورة للحالة النشطة للتعديل عليها)
-        function editInvoiceAfterSale(invoiceId) {
-            let invIndex = salesHistory.findIndex(i => i.id === invoiceId);
-            if(invIndex > -1) {
-                cart = [...salesHistory[invIndex].items];
-                salesHistory.splice(invIndex, 1); // سحبها للتعديل
-                localStorage.setItem('dijla_sales', JSON.stringify(salesHistory));
-                alert("تم إرجاع الفاتورة إلى قائمة البيع النشطة، يمكنك التعديل عليها الآن وإعادة حفظها!");
-                showSection('pos');
-            }
-        }
-
-        function renderSalesHistory() {
-            const container = document.getElementById('records-container');
-            container.innerHTML = '';
-            if(salesHistory.length === 0) container.innerHTML = '<p style="color:gray; text-align:center;">لا توجد قوائم مبيعات محفوظة حالياً.</p>';
+        // إنهاء الفاتورة، حفظها بالـ DB وتوليد الـ PDF وطباعته فوراً
+        async function checkoutCurrentInvoice() {
+            if(currentInvoiceItems.length === 0) return alert("سلة البيع فارغة!");
             
-            salesHistory.forEach(inv => {
+            let total = currentInvoiceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let customerName = document.getElementById('pos-customer-name').value || "عميل نقدي";
+            let invoiceId = 'INV-' + Date.now();
+            let dateStr = new Date().toLocaleString('ar-IQ');
+
+            let invData = { invoiceId, customerName, date: dateStr, items: [...currentInvoiceItems], total };
+            await db.invoices.add(invData);
+
+            // تشغيل محرك طباعة jspdf لإنتاج القوائم الفخمة
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("معرض دجلة الذكي للمحاسبة", 10, 10);
+            doc.text(`رقم القائمة: ${invoiceId}`, 10, 20);
+            doc.text(`العميل: ${customerName}`, 10, 30);
+            doc.text(`التاريخ: ${dateStr}`, 10, 40);
+            doc.text(`المجموع الكلي: ${total.toLocaleString()} دينار عراقي`, 10, 50);
+            doc.save(`${invoiceId}.pdf`);
+
+            currentInvoiceItems = [];
+            document.getElementById('pos-customer-name').value = '';
+            renderInvoiceTable();
+            alert("تم اعتماد الفاتورة بنجاح، وتوليد ملف الـ PDF لطباعته!");
+            switchView('dashboard');
+        }
+
+        // ميزة التعديل ومراجعة القوائم بعد البيع
+        async function renderDashboard() {
+            let invoices = await db.invoices.toArray();
+            let totalSales = invoices.reduce((sum, inv) => sum + inv.total, 0);
+            document.getElementById('total-sales-amount').innerText = totalSales.toLocaleString();
+
+            const container = document.getElementById('recent-invoices-list');
+            container.innerHTML = '';
+
+            if(invoices.length === 0) container.innerHTML = '<p style="color:gray; text-align:center;">لا توجد فواتير معتمدة اليوم في الذاكرة.</p>';
+
+            invoices.reverse().forEach(inv => {
                 container.innerHTML += `
                     <div style="background:#222; padding:12px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--primary-color);">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                            <span style="font-weight:bold; color:var(--primary-color);">${inv.id}</span>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="font-weight:bold; color:var(--primary-color);">${inv.invoiceId}</span>
                             <span style="font-size:12px; color:gray;">${inv.date}</span>
                         </div>
-                        <div style="font-size:13px; color:#ccc; margin-bottom:8px;">عدد المواد: ${inv.items.length} | المجموع: ${inv.total.toLocaleString()} د.ع</div>
-                        <button class="btn" style="width:100%; padding:6px; font-size:12px;" onclick="editInvoiceAfterSale('${inv.id}')">🔄 تعديل هذه القائمة (إعادة فتح بعد البيع)</button>
+                        <div style="font-size:13px; color:#ccc; margin: 5px 0;">العميل: ${inv.customerName} | الإجمالي: ${inv.total.toLocaleString()} د.ع</div>
+                        <button class="btn" style="width:100%; padding:6px; font-size:12px;" onclick="returnInvoiceToCart('${inv.invoiceId}')">🔄 تعديل هذه القائمة وإعادة فتحها (بعد البيع)</button>
                     </div>
                 `;
             });
         }
 
-        function renderCatalog() {
-            const tbody = document.querySelector('#catalog-table tbody');
-            tbody.innerHTML = '';
-            catalog.forEach(p => {
-                tbody.innerHTML += `<tr><td>${p.name}</td><td>${p.price.toLocaleString()} د.ع</td></tr>`;
-            });
-        }
-
-        function saveToCatalog() {
-            let name = document.getElementById('prod-name').value;
-            let price = parseFloat(document.getElementById('prod-price').value);
-            if(name && price) {
-                catalog.push({id: Date.now(), name, price});
-                localStorage.setItem('dijla_catalog', JSON.stringify(catalog));
-                document.getElementById('prod-name').value = '';
-                document.getElementById('prod-price').value = '';
-                renderCatalog();
+        // إعادة فتح القائمة المحفوظة وتعديل قيمها وإعادة بيعها
+        async function returnInvoiceToCart(invoiceId) {
+            let inv = await db.invoices.where('invoiceId').equals(invoiceId).first();
+            if(inv) {
+                currentInvoiceItems = [...inv.items];
+                document.getElementById('pos-customer-name').value = inv.customerName;
+                await db.invoices.where('invoiceId').equals(invoiceId).delete();
+                alert("تمت إعادة فتح الفاتورة في سلة البيع النشطة، يمكنك إجراء التعديلات عليها الآن ثم إعادة حفظها!");
+                switchView('pos');
+                renderInvoiceTable();
             }
         }
 
-        function renderAll() {
-            renderCart();
-            renderCatalog();
-            renderSalesHistory();
-        }
-
-        // تشغيل نظام الخدمة والـ PWA بدون نت
+        // تشغيل ميزة الأوفلاين الكامل بالتطبيق
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
-        
-        window.onload = renderAll;
+
+        window.onload = () => {
+            switchView('dashboard');
+        };
     </script>
 </body>
 </html>
-
-        
