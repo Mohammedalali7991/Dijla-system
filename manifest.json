@@ -1,8 +1,8 @@
 {
-  "name": "نظام dila لنظام",
+  "name": "نظام دجلة للمحاسبة والمخازن",
   "short_name": "نظام دجلة",
   "description": "نظام ذكي لتكنولوجيا المعلومات، المخازن، المبيعات وقوائم معرض دجلة يعمل بالكامل بدون إنترنت",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#bfa15f",
