@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام دجلة للمحاسبة والمخازن</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon.png">
+    
     <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <style>
         :root {
             --primary-color: #bfa15f;
@@ -143,8 +146,8 @@
 </head>
 <body>
 
-    <img src="icon.png" alt="شعار معرض دجلة الفخم" style="max-width: 150px; height: auto;">
-
+    <div class="header">
+        <img src="icon.png" alt="شعار معرض دجلة الفخم">
         <h1>معرض دجلة الذكي</h1>
         <p>إدارة المخازن، الفواتير المحفوظة، وقوائم البيع المرنة</p>
     </div>
@@ -218,7 +221,7 @@
     </div>
 
     <script>
-        // إعداد قاعدة البيانات المحلية المتقدمة لضمان عمل البرنامج بدون إنترنت
+        // تهيئة قاعدة البيانات المحلية الذكية لإدارة البيانات تماماً بدون إنترنت
         const db = new Dexie("DijlahEnterpriseDB");
         db.version(1).stores({
             products: "++id, barcode, name, price",
@@ -227,6 +230,7 @@
 
         let currentInvoiceItems = [];
 
+        // دالة التنقل والتبديل السلس بين الواجهات
         function switchView(view) {
             document.getElementById('dashboard-view').style.display = view === 'dashboard' ? 'block' : 'none';
             document.getElementById('inventory-view').style.display = view === 'inventory' ? 'block' : 'none';
@@ -235,7 +239,7 @@
             if(view === 'dashboard') renderDashboard();
         }
 
-        // عمليات المستودع
+        // إضافة وحفظ المادة الجديدة داخل المستودع
         async function saveNewProduct() {
             let name = document.getElementById('prod-name').value;
             let price = parseFloat(document.getElementById('prod-price').value) || 0;
@@ -251,6 +255,7 @@
             }
         }
 
+        // عرض السجلات المخزنة في جدول الكتالوج والمستودع
         async function renderInventory() {
             const tbody = document.getElementById('inventory-table-body');
             tbody.innerHTML = '';
@@ -260,7 +265,7 @@
             });
         }
 
-        // سلة البيع وقراءة الباركود/البحث المباشر
+        // إدخال المواد إلى سلة البيع النشطة من خلال مطابقة الباركود أو جزء من الاسم
         async function addProductToCartManual() {
             let val = document.getElementById('pos-barcode-input').value;
             if(!val) return;
@@ -275,6 +280,7 @@
             renderInvoiceTable();
         }
 
+        // رسم وتحديث جدول محتويات القائمة والسلة الحالية بشكل فوري
         function renderInvoiceTable() {
             const tbody = document.getElementById('invoice-items-table');
             tbody.innerHTML = '';
@@ -296,18 +302,19 @@
             document.getElementById('invoice-total-label').innerText = total.toLocaleString();
         }
 
-        // ميزة التعديل الذكي قبل وأثناء البيع للقيم والأسعار
+        // دالة التعديل الذكي للقيم، الحسابات والأسعار بشكل حي وتلقائي
         function updateCartItem(index, field, value) {
             currentInvoiceItems[index][field] = parseFloat(value) || 0;
             renderInvoiceTable();
         }
 
+        // سحب وحذف عنصر من السلة قبل الاعتماد النهائي
         function removeItemFromCart(index) {
             currentInvoiceItems.splice(index, 1);
             renderInvoiceTable();
         }
 
-        // إنهاء الفاتورة، حفظها بالـ DB وتوليد الـ PDF وطباعته فوراً
+        // عملية اعتماد وحفظ القائمة الحالية، وتوليد ملف الطباعة PDF وتصفير السلة
         async function checkoutCurrentInvoice() {
             if(currentInvoiceItems.length === 0) return alert("سلة البيع فارغة!");
             
@@ -319,7 +326,7 @@
             let invData = { invoiceId, customerName, date: dateStr, items: [...currentInvoiceItems], total };
             await db.invoices.add(invData);
 
-            // تشغيل محرك طباعة jspdf لإنتاج القوائم الفخمة
+            // تفعيل محرك الطباعة لتوليد وحفظ ملف الـ PDF فوراً للعميل
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             doc.text("معرض دجلة الذكي للمحاسبة", 10, 10);
@@ -336,7 +343,7 @@
             switchView('dashboard');
         }
 
-        // ميزة التعديل ومراجعة القوائم بعد البيع
+        // عرض قائمة الفواتير وحساب إجمالي المبيعات المعتمدة داخل لوحة التحكم
         async function renderDashboard() {
             let invoices = await db.invoices.toArray();
             let totalSales = invoices.reduce((sum, inv) => sum + inv.total, 0);
@@ -345,7 +352,9 @@
             const container = document.getElementById('recent-invoices-list');
             container.innerHTML = '';
 
-            if(invoices.length === 0) container.innerHTML = '<p style="color:gray; text-align:center;">لا توجد فواتير معتمدة اليوم في الذاكرة.</p>';
+            if(invoices.length === 0) {
+                container.innerHTML = '<p style="color:gray; text-align:center;">لا توجد فواتير معتمدة اليوم في الذاكرة.</p>';
+            }
 
             invoices.reverse().forEach(inv => {
                 container.innerHTML += `
@@ -361,7 +370,7 @@
             });
         }
 
-        // إعادة فتح القائمة المحفوظة وتعديل قيمها وإعادة بيعها
+        // إعادة فتح القوائم المعتمدة وتعديل محتواها أو أسعارها بعد إتمام عملية البيع وحذف القديم تلقائياً من الـ DB
         async function returnInvoiceToCart(invoiceId) {
             let inv = await db.invoices.where('invoiceId').equals(invoiceId).first();
             if(inv) {
@@ -374,7 +383,7 @@
             }
         }
 
-        // تشغيل ميزة الأوفلاين الكامل بالتطبيق
+        // تسجيل وتشغيل الـ Service Worker لضمان استقرار الأوفلاين
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
