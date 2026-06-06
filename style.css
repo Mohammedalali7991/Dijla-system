@@ -1,0 +1,81 @@
+:root {
+    --bg-main: #060608;
+    --bg-card: #111116;
+    --bg-sidebar: #0b0b0e;
+    --accent: #00adb5;
+    --text-main: #eeeeee;
+    --text-muted: #8c8c9e;
+    --warning-orange: #ff9800;
+    --danger: #e11d48;
+    --success: #25d366;
+    --border-color: #1f1f2a;
+    --purple-kpi: #8b5cf6;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; transition: background 0.2s ease, border-color 0.2s ease; }
+body { background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+/* شاشات الدخول الفعلي والتحقق */
+#auth-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-main); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px;
+}
+.auth-box {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    padding: 30px; border-radius: 16px; width: 100%; max-width: 440px; text-align: center;
+}
+
+/* الهيكل والشريط الجانبي */
+.sidebar { width: 320px; background-color: var(--bg-sidebar); display: flex; flex-direction: column; border-left: 1px solid var(--border-color); z-index: 100; }
+.sidebar-header { padding: 18px; text-align: center; font-weight: 700; font-size: 16px; color: var(--accent); border-bottom: 1px solid var(--border-color); }
+.sidebar-menu { list-style: none; padding: 10px 0; overflow-y: auto; flex: 1; }
+.sidebar-item { padding: 10px 18px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #b8b8c7; border-bottom: 1px solid rgba(255,255,255,0.01); }
+.sidebar-item:hover, .sidebar-item.active { background-color: #14141f; color: var(--accent); border-right: 4px solid var(--accent); }
+.menu-category { padding: 12px 18px 4px 18px; font-size: 10.5px; font-weight: 700; color: var(--purple-kpi); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* واجهة العمل الرئيسية */
+.main-container { flex: 1; display: flex; flex-direction: column; height: 100vh; background-color: var(--bg-main); overflow: hidden; }
+.topbar { height: 65px; background-color: var(--bg-sidebar); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid var(--border-color); }
+.topbar-tools { display: flex; align-items: center; gap: 6px; }
+.tool-icon-btn { background: #141419; border: 1px solid var(--border-color); color: var(--text-main); padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+.tool-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.content-area { flex: 1; padding: 15px; overflow-y: auto; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* العناصر والبطاقات */
+.card { background-color: var(--bg-card); border-radius: 12px; padding: 18px; margin-bottom: 15px; border: 1px solid var(--border-color); }
+.kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 15px; }
+.kpi-card { background: #171721; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); text-align: center; }
+.kpi-val { font-size: 18px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+
+h2 { margin-bottom: 12px; font-size: 14px; font-weight: 700; color: var(--accent); border-right: 3px solid var(--accent); padding-right: 8px; display: flex; align-items: center; gap: 8px; }
+h3 { font-size: 13px; color: var(--purple-kpi); margin: 10px 0; }
+.form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; text-align: right; width: 100%; }
+label { font-size: 11.5px; color: var(--text-muted); font-weight: bold; }
+select, input, textarea { background-color: #0b0b0e; border: 1px solid #252533; padding: 8px 10px; border-radius: 6px; color: white; font-size: 12.5px; outline: none; width: 100%; }
+select:focus, input:focus { border-color: var(--accent); }
+
+.btn { background: #141419; border: 1px solid var(--border-color); color: white; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
+.btn:hover { border-color: var(--accent); color: var(--accent); background: #1c1c24; }
+
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+
+.table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px; background: #0c0c10; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--border-color); font-size: 12.5px; white-space: nowrap; }
+th { background-color: #0b0b0e; color: var(--accent); font-weight: 700; }
+tr:hover { background-color: rgba(255,255,255,0.01); }
+tr.low-stock { background-color: rgba(255, 152, 0, 0.08) !important; color: var(--warning-orange); }
+
+.popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 9000; display: none; }
+.popup-box { background: var(--bg-card); padding: 25px; border-radius: 14px; width: 90%; max-width: 520px; border: 1px solid var(--accent); }
+.calc-box { position: fixed; bottom: 70px; left: 20px; background: #111116; border: 1px solid var(--accent); padding: 12px; border-radius: 10px; width: 240px; display: none; z-index: 5000; }
+.kb-box { position: fixed; bottom: 70px; right: 20px; background: #111116; border: 1px solid var(--purple-kpi); padding: 12px; border-radius: 10px; width: 450px; display: none; z-index: 5000; direction: ltr; }
+
+.tab-btn { background: #141419; border: 1px solid var(--border-color); color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11.5px; }
+.tab-btn.active { background: var(--accent); color: black; font-weight: bold; }
+.badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
