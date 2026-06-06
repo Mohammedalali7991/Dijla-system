@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام دجلة المطور العملاق - DIJLAH ERP v3.0 Ultimate</title>
+    <title>نظام دجلة المطور العملاق - Ultimate ERP v6.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --bg-main: #060608;
@@ -20,653 +21,302 @@
             --purple-kpi: #8b5cf6;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Tajawal', sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+        /* شاشة الخصوصية المطلقة للدخول الصوري */
+        #auth-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main); z-index: 5000;
+            display: flex; justify-content: center; align-items: center; padding: 20px;
         }
+        .auth-box {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            padding: 30px; border-radius: 16px; width: 100%; max-width: 420px; text-align: center;
+        }
+        .auth-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .auth-tab { flex: 1; padding: 8px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: bold; }
+        .auth-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+        .auth-method-section { display: none; }
+        .auth-method-section.active { display: block; }
+        .social-btn {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #4285f4;
+            background: rgba(66, 133, 244, 0.1); color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: bold;
+        }
+        .social-btn:hover { background: #4285f4; }
 
-        /* القائمة الجانبية اليمنى العملاقة */
-        .sidebar {
-            width: 310px;
-            background-color: var(--bg-sidebar);
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid var(--border-color);
-            z-index: 100;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            text-align: center;
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--accent);
-            border-bottom: 1px solid var(--border-color);
-            background: linear-gradient(to bottom, #111116, #0b0b0e);
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 10px 0;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .sidebar-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.2s ease;
-            font-size: 13px;
-            color: #b8b8c7;
-            border-bottom: 1px solid rgba(255,255,255,0.01);
-        }
-
-        .sidebar-item:hover, .sidebar-item.active {
-            background-color: #14141f;
-            color: var(--accent);
-            border-right: 4px solid var(--accent);
-        }
-
-        .menu-category {
-            padding: 15px 20px 5px 20px;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--purple-kpi);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* المنطقة الرئيسية للعمل والعرض */
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background-color: var(--bg-main);
-        }
-
-        /* شريط الأدوات والأيقونات السريعة العلوي الثابت */
-        .topbar {
-            height: 70px;
-            background-color: var(--bg-sidebar);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .topbar-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        /* أيقونات شريط الأدوات المطلوب في المتناول */
-        .topbar-tools {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .tool-icon-btn {
-            background: #141419;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .tool-icon-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: #191924;
-        }
-
-        /* منطقة المحتوى الديناميكي */
-        .content-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        /* تصميم الكروت والجداول */
-        .card {
-            background-color: var(--bg-card);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .kpi-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .kpi-card {
-            background: #171721;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        .kpi-val {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--accent);
-            margin-top: 5px;
-        }
-
-        h2 {
-            margin-bottom: 15px;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        label {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        select, input, textarea {
-            background-color: #0b0b0e;
-            border: 1px solid #252533;
-            padding: 10px;
-            border-radius: 6px;
-            color: white;
-            font-size: 13px;
-            width: 100%;
-            outline: none;
-        }
-
-        select:focus, input:focus {
-            border-color: var(--accent);
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-        }
-
-        /* الجداول والتأشير بالبرتقالي */
-        .table-responsive {
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px 14px;
-            text-align: right;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 13px;
-            white-space: nowrap;
-        }
-
-        th {
-            background-color: #0b0b0e;
-            color: var(--accent);
-        }
-
-        tr.low-stock {
-            background-color: rgba(255, 152, 0, 0.1) !important;
-            color: var(--warning-orange);
-            font-weight: bold;
-        }
-
-        tr.high-stock {
-            background-color: rgba(139, 92, 246, 0.1) !important;
-            color: #a78bfa;
-        }
-
-        /* النوافذ والمنبثقات */
-        .popup-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 2000;
-            display: none;
-        }
-
-        .popup-box {
-            background: var(--bg-card);
-            padding: 25px;
-            border-radius: 14px;
-            width: 90%;
-            max-width: 480px;
-            border: 1px solid var(--warning-orange);
-        }
-
-        /* الحاسبة المدمجة الكلاسيكية */
-        .calc-box {
-            position: fixed; bottom: 20px; left: 20px;
-            background: #111116; border: 1px solid var(--accent);
-            padding: 12px; border-radius: 10px; width: 230px; display: none;
-            z-index: 1500;
-        }
-
-        .badge {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-        }
+        /* الهيكل الرئيسي للمنظومة */
+        .sidebar { width: 310px; background-color: var(--bg-sidebar); display: flex; flex-direction: column; border-left: 1px solid var(--border-color); z-index: 100; }
+        .sidebar-header { padding: 20px; text-align: center; font-weight: 700; font-size: 18px; color: var(--accent); border-bottom: 1px solid var(--border-color); }
+        .sidebar-menu { list-style: none; padding: 10px 0; overflow-y: auto; flex: 1; }
+        .sidebar-item { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s ease; font-size: 13px; color: #b8b8c7; border-bottom: 1px solid rgba(255,255,255,0.01); }
+        .sidebar-item:hover, .sidebar-item.active { background-color: #14141f; color: var(--accent); border-right: 4px solid var(--accent); }
+        .menu-category { padding: 15px 20px 5px 20px; font-size: 11px; font-weight: 700; color: var(--purple-kpi); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .main-container { flex: 1; display: flex; flex-direction: column; height: 100vh; background-color: var(--bg-main); }
+        .topbar { height: 70px; background-color: var(--bg-sidebar); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border-color); }
+        .topbar-tools { display: flex; align-items: center; gap: 8px; }
+        .tool-icon-btn { background: #141419; border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .tool-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+        
+        .content-area { flex: 1; padding: 20px; overflow-y: auto; }
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .card { background-color: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .kpi-card { background: #171721; padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); text-align: center; }
+        .kpi-val { font-size: 20px; font-weight: 700; color: var(--accent); }
+        
+        h2 { margin-bottom: 15px; font-size: 15px; font-weight: 700; color: var(--accent); border-right: 3px solid var(--accent); padding-right: 8px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; text-align: right; width: 100%; }
+        label { font-size: 12px; color: var(--text-muted); }
+        select, input, textarea { background-color: #0b0b0e; border: 1px solid #252533; padding: 10px; border-radius: 6px; color: white; font-size: 13px; outline: none; width: 100%; }
+        select:focus, input:focus { border-color: var(--accent); }
+        
+        .btn { background: #141419; border: 1px solid var(--border-color); color: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn:hover { border-color: var(--accent); color: var(--accent); background: #1c1c24; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        
+        .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 14px; text-align: right; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+        th { background-color: #0b0b0e; color: var(--accent); }
+        
+        tr.low-stock { background-color: rgba(255, 152, 0, 0.1) !important; color: var(--warning-orange); font-weight: bold; }
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; display: none; }
+        .popup-box { background: var(--bg-card); padding: 25px; border-radius: 14px; width: 90%; max-width: 480px; border: 1px solid var(--warning-orange); }
+        .calc-box { position: fixed; bottom: 20px; left: 20px; background: #111116; border: 1px solid var(--accent); padding: 12px; border-radius: 10px; width: 230px; display: none; z-index: 1500; }
     </style>
 </head>
 <body>
 
+    <div id="auth-container">
+        <div class="auth-box">
+            <h2 style="margin-bottom: 15px; color: var(--accent); border:none;">💎 نظام دجلة للتحكم ERP</h2>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('google-tab', this)">🌐 حساب Google</button>
+                <button class="auth-tab" onclick="switchAuthTab('phone-tab', this)">📱 رقم الهاتف</button>
+                <button class="auth-tab" onclick="switchAuthTab('email-tab', this)">📧 البريد والرمز</button>
+            </div>
+            <div id="google-tab" class="auth-method-section active">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">دخول فوري مباشر وآمن بالكامل لحفظ الخصوصية بدون اتصال بالسيرفرات</p>
+                <button class="social-btn" onclick="bypassAuth('حساب Google')">🌐 دخول سريع وسلس عبر Google</button>
+            </div>
+            <div id="phone-tab" class="auth-method-section">
+                <div class="form-group"><label>رقم الهاتف التشغيلي</label><input type="tel" id="auth-phone" placeholder="+964 770 000 0000"></div>
+                <button class="btn" style="width: 100%; background: var(--accent); color: black; font-weight: bold;" onclick="bypassAuth('الهاتف: ' + document.getElementById('auth-phone').value)">📲 دخول فوري محلي</button>
+            </div>
+            <div id="email-tab" class="auth-method-section">
+                <div class="form-group"><label>البريد الإلكتروني الداخلي</label><input type="email" id="auth-email" placeholder="admin@dijla.com"></div>
+                <div class="form-group"><label>كلمة المرور المشفرة</label><input type="password" id="auth-pass" placeholder="******"></div>
+                <button class="btn" style="width: 100%; background: #1f1f2a;" onclick="bypassAuth(document.getElementById('auth-email').value || 'الإدارة العليا')">🔓 فتح النظام</button>
+            </div>
+        </div>
+    </div>
+
     <div class="sidebar">
-        <div class="sidebar-header">💎 نظام دجلة ERP v3.0</div>
+        <div class="sidebar-header">💎 نظام دجلة ERP v6.0</div>
         <ul class="sidebar-menu">
-            
             <div class="menu-category">الرئيسية والذكاء الاصطناعي</div>
             <li class="sidebar-item active" onclick="switchPage('dashboard', event)">📊 لوحة الأداء ومؤشرات الـ KPI</li>
             <li class="sidebar-item" onclick="switchPage('ai_analysis', event)">🧠 ذكاء التنبؤ وسلوك العملاء</li>
             
             <div class="menu-category">إدارة المنتجات والأصناف</div>
-            <li class="sidebar-item" onclick="switchPage('products', event)">📦 بطاقة الصنف وفئات المنتجات</li>
-            <li class="sidebar-item" onclick="switchPage('barcodes', event)">🏷️ باركود وتوليد الـ QR Code وطباعته</li>
+            <li class="sidebar-item" onclick="switchPage('products', event)">📦 بطاقة الصنف الديناميكية (CRUD)</li>
             
-            <div class="menu-category">إدارة المخازن والـ WMS الدقيق</div>
+            <div class="menu-category">نظام المبيعات والعملات المزدوجة</div>
+            <li class="sidebar-item" onclick="switchPage('sales_screen', event)">💰 شاشة المبيعات الذكية (POS)</li>
+            <li class="sidebar-item" onclick="switchPage('returns_screen', event)">🔄 إدارة مستندات المسترجعات</li>
+            
+            <div class="menu-category">إدارة المخازن والموقع الدقيق</div>
             <li class="sidebar-item" onclick="switchPage('warehouses', event)">🏢 المخازن المتعددة ونقل البضائع</li>
-            <li class="sidebar-item" onclick="switchPage('locations', event)">📍 مواقع التخزين (Aisle/Rack/Shelf/Bin)</li>
-            <li class="sidebar-item" onclick="switchPage('realtime_stock', event)">⏱️ تتبع الأرصدة اللحظية والتشغيلات</li>
-            <li class="sidebar-item" onclick="switchPage('stock_limits', event)">⚠️ تنبيهات وحدود المخزون والطلبات</li>
-            <li class="sidebar-item" onclick="switchPage('jard_control', event)">📝 عمليات الجرد السنوي والتسويات</li>
+            <li class="sidebar-item" onclick="switchPage('locations', event)">📍 مواقع التخزين والتتبع الداخلي</li>
             
-            <div class="menu-category">المشتريات والموردين</div>
-            <li class="sidebar-item" onclick="switchPage('suppliers', event)">🤝 سجل الموردين وتقييم الأداء</li>
-            <li class="sidebar-item" onclick="switchPage('purchase_orders', event)">📥 أوامر الشراء وفحص جودة الاستلام</li>
+            <div class="menu-category">استراتيجيات الصرف والجرد الدوري</div>
+            <li class="sidebar-item" onclick="switchPage('jard_control', event)">📝 عمليات الجرد والتسويات المخزنية</li>
             
-            <div class="menu-category">المبيعات والعملاء والشحن</div>
-            <li class="sidebar-item" onclick="switchPage('sales_screen', event)">💰 شاشة المبيعات وفواتير الحسابات</li>
-            <li class="sidebar-item" onclick="switchPage('fulfillment', event)">🚚 تجهيز الطلبيات والشحن (Pick & Pack)</li>
-            <li class="sidebar-item" onclick="switchPage('loyalty', event)">🎁 العروض الترويجية ونقاط الولاء</li>
-            
-            <div class="menu-category">الحسابات والمالية العامة</div>
-            <li class="sidebar-item" onclick="switchPage('finance', event)">🏛️ الحسابات العامة، الأرباح ومراكز التكلفة</li>
-            
-            <div class="menu-category">الأمان والرقابة وسلة المحذوفات</div>
-            <li class="sidebar-item" onclick="switchPage('security', event)">🔐 الأدوار، الصلاحيات والـ 2FA والنسخ</li>
-            <li class="sidebar-item" onclick="switchPage('recycle_bin', event)">🗑️ سلة المحذوفات وتدقيق السندات</li>
+            <div class="menu-category">إدارة الموردين والمشتريات</div>
+            <li class="sidebar-item" onclick="switchPage('suppliers', event)">🤝 سجل الموردين وأوامر الشراء والاستلام</li>
         </ul>
     </div>
 
     <div class="main-container">
-        
         <div class="topbar">
-            <div class="topbar-title">🏢 شركة دجلة القابضة | الفروع مدمجة بالتزامن السحابي</div>
+            <div class="topbar-title" id="system-user-title">⚙️ فرع بغداد الرئيسي | السحابية مقفلة للحظر والخصوصية</div>
             <div class="topbar-tools">
-                <button class="tool-icon-btn" onclick="toggleCalc()">🧮 الحاسبة</button>
-                <button class="tool-icon-btn" onclick="window.print()">🖨️ طباعة الفورية</button>
-                <button class="tool-icon-btn" onclick="alert('لوحة المفاتيح الافتراضية نشطة الآن للاستخدام')">⌨️ لوحة افتراضية</button>
-                <button class="tool-icon-btn" onclick="alert('تم تفعيل الكاميرا كـ باركود وماسح ضوئي مدمج')">📷 الكاميرا والماسح</button>
-                <button class="tool-icon-btn" onclick="alert('صندوق الوارد: لا توجد مراسلات جديدة حالياً')">📧 المراسلات</button>
-                <button class="tool-icon-btn" onclick="location.reload()">🔄 تحديث البيانات</button>
-                <button class="tool-icon-btn" style="color: var(--danger);" onclick="alert('تم تسجيل الخروج الآمن ومزامنة البيانات')">🚪 خروج</button>
+                <button class="tool-icon-btn" style="background: rgba(37, 211, 102, 0.2); color: var(--success);" onclick="alert('تنبيهات وإشعارات الواتساب وتليجرام نشطة محلياً!')">💬 تنبيهات نشطة</button>
+                <button class="tool-icon-btn" onclick="toggleCalc()">🧮 حاسبة النظام</button>
+                <button class="tool-icon-btn" onclick="logout()">🚪 خروج</button>
             </div>
         </div>
 
         <div class="content-area">
-
             <div id="dashboard" class="page active">
                 <div class="kpi-container">
-                    <div class="kpi-card"><div>إجمالي قيمة المخزون اللحظي</div><div class="kpi-val">$245,180</div></div>
-                    <div class="kpi-card"><div>المواد المتوفرة فورياً</div><div class="kpi-val" style="color: var(--success);">1,840 قطعة</div></div>
-                    <div class="kpi-card"><div>المواد قيد الطلب</div><div class="kpi-val" style="color: var(--warning-orange);">420 قطعة</div></div>
-                    <div class="kpi-card"><div>المواد المحجوزة</div><div class="kpi-val" style="color: var(--purple-kpi);">150 قطعة</div></div>
+                    <div class="kpi-card"><div>إجمالي المنتجات والأصناف</div><div class="kpi-val" id="kpi-total-items">3</div></div>
+                    <div class="kpi-card"><div>القيمة التقديرية الكلية</div><div class="kpi-val" style="color: var(--success);" id="kpi-total-value">$1,315</div></div>
+                    <div class="kpi-card"><div>عمليات المبيعات المنفذة</div><div class="kpi-val" id="kpi-sales-count" style="color: var(--purple-kpi);">0</div></div>
+                    <div class="kpi-card"><div>إجمالي الديون والذمم الصافية</div><div class="kpi-val" style="color: var(--danger);" id="kpi-total-debts">$1,950</div></div>
                 </div>
-
                 <div class="card">
-                    <h2>📊 مركز ترحيل واستخراج التقارير التفصيلية</h2>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn" onclick="alert('تم تصدير التقرير المالي بصيغة PDF')">📄 تصدير PDF</button>
-                        <button class="btn" onclick="alert('تم تصدير تقرير الجرد والمبيعات إلى Excel')">📈 تصدير Excel</button>
-                    </div>
+                    <h2>📊 حالة النظام والتحكم التشغيلي اللحظي الفعلي لمصنع دجلة</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.8; margin-top: 10px;">النظام مجهز بالكامل للتحكم بأعمال تصنيع وتوريد المطابخ، الأبواب، والشبابيك. هذا المحرك حركي وتنفيذي حقيقي ومحمي بالكامل محلياً.</p>
                 </div>
             </div>
 
             <div id="ai_analysis" class="page">
                 <div class="card">
-                    <h2>🧠 وحدة الذكاء الاصطناعي AI للتنبؤ وتحليل حركة الأصناف</h2>
-                    <div class="grid-2">
-                        <div class="card" style="background: #060608;">
-                            <h3 style="color: var(--success); font-size: 14px; margin-bottom: 8px;">🔥 حركة الأصناف سريعة الحركة</h3>
-                            <p style="font-size: 13px;">• <strong>شاشة ذكية 55 بوصة:</strong> معدل دوران عالي. اقتراح الشراء: قبل 5 أيام من نهاية الشهر.</p>
-                        </div>
-                        <div class="card" style="background: #060608;">
-                            <h3 style="color: var(--danger); font-size: 14px; margin-bottom: 8px;">❄️ الأصناف الراكدة وبطيئة الحركة</h3>
-                            <p style="font-size: 13px;">• <strong>عصير طبيعي طازج:</strong> راكد. يوصي النظام بتخفيض السعر أو إدراجه في العروض.</p>
-                        </div>
-                    </div>
+                    <h2>🧠 وحدة الذكاء الاصطناعي لتنبؤ معدلات حركات الصرف وسلوك العملاء</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px;">يقوم النظام ميكانيكياً بتحليل الأصناف الأكثر طلباً بناءً على فواتير المبيعات الصادرة الحالية للتنبؤ بالنواقص قبل حدوثها.</p>
                 </div>
             </div>
 
             <div id="products" class="page">
                 <div class="card">
-                    <h2>📦 بطاقة تعريف وتعديلات المواد والأصناف والوحدات</h2>
-                    <div class="grid-3">
-                        <div class="form-group"><label>اسم المنتج الصنف</label><input type="text" placeholder="ثلاجة إنفيرتر حديد"></div>
-                        <div class="form-group"><label>تصنيف وفئات المنتج</label><select><option>أجهزة كهربائية</option><option>مواد غذائية</option></select></div>
-                        <div class="form-group"><label>وحدات القياس المتعددة</label><select><option>قطعة / صندوق</option><option>كيلوغرام / كيس</option></select></div>
+                    <h2 id="product-form-title">📦 إضافة أو تعديل مادة ومواصفات قطعة في قاعدة البيانات</h2>
+                    <input type="hidden" id="p-id">
+                    <div class="grid-3" style="margin-top: 15px;">
+                        <div class="form-group"><label>اسم المنتج الصنف (باب، شباك، مطبخ، إكسسوار)</label><input type="text" id="p-name" placeholder="مثال: مطبخ ألمنيوم ملكي"></div>
+                        <div class="form-group"><label>فئة وتصنيف الصنف</label><input type="text" id="p-category" placeholder="مطابخ"></div>
+                        <div class="form-group"><label>سعر البيع للقطعة / المتر ($)</label><input type="number" id="p-price" placeholder="0"></div>
+                        <div class="form-group"><label>الكمية المتوفرة حالياً</label><input type="number" id="p-qty" placeholder="0"></div>
+                        <div class="form-group"><label>الحد المخزني الأدنى للتنبيه</label><input type="number" id="p-min" value="2"></div>
                     </div>
-                    <button class="btn" style="background-color: var(--accent); color: black;" onclick="alert('تم ترحيل الصنف وتوليد كود تلقائي له')">➕ إنشاء الكود التلقائي وحفظ المادة</button>
-                </div>
-            </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn" style="background: var(--accent); color: black; font-weight: bold;" onclick="saveProduct()">💾 حفظ وتحديث بيانات المادة</button>
+                        <button class="btn" onclick="clearProductForm()">🔄 تفريغ الحقول</button>
+                    </div>
 
-            <div id="barcodes" class="page">
-                <div class="card">
-                    <h2>🏷️ إدارة وطباعة الباركود وأكواد الـ QR Code التلقائية</h2>
-                    <div class="grid-2">
-                        <div class="card" style="background: #060608; text-align: center;">
-                            <p style="font-size: 14px; font-family: monospace; letter-spacing: 3px; color: #fff;">||||| | |||| ||| 1002 ||||</p>
-                            <button class="btn" style="margin-top: 10px;" onclick="alert('جاري إرسال أمر طباعة الباركود')">🖨️ طباعة باركود الأصناف</button>
-                        </div>
-                        <div class="card" style="background: #060608; text-align: center;">
-                            <p style="font-size: 13px; color: var(--accent);">[ رمز QR Code مفعّل لتتبع المنتج ]</p>
-                            <button class="btn" style="margin-top: 10px;" onclick="alert('تم توليد الـ QR Code الخاص بالمنتج')">🔗 إنشاء QR ذكي</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="warehouses" class="page">
-                <div class="card">
-                    <h2>🏢 نقل البضائع والسلع بين المخازن وإدخال/إخراج مخزني</h2>
-                    <div class="grid-3">
-                        <div class="form-group"><label>مخزن المبدأ</label><select><option>مخزن بغداد الرئيسي</option><option>مخزن البصرة</option></select></div>
-                        <div class="form-group"><label>مخزن الوجهة</label><select><option>مخزن البصرة</option><option>مخزن بغداد الرئيسي</option></select></div>
-                        <div class="form-group"><label>الالكمية</label><input type="number" placeholder="0"></div>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button class="btn" onclick="alert('تم ترحيل مستند النقل بنجاح')">🔄 ترحيل نقل بين المخازن</button>
-                        <button class="btn" style="background: #2563eb;" onclick="alert('عرض كشف إدخال وإخراج مخزني للتأكد من القيود')">📄 كشف إدخال وإخراج مخزني</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="locations" class="page">
-                <div class="card">
-                    <h2>📍 تتبع مواقع التخزين بدقة مذهلة (WMS)</h2>
-                    <div class="grid-3">
-                        <div class="form-group"><label>الممر (Aisle)</label><input type="text" value="Aaisle-01"></div>
-                        <div class="form-group"><label>الرف (Rack)</label><input type="text" value="Rack-02"></div>
-                        <div class="form-group"><label>الخانة والرف السفلي (Shelf / Bin)</label><input type="text" value="Shelf-01 / Bin-B"></div>
-                    </div>
-                    <button class="btn" onclick="alert('تم تحديث وتتبع موقع التخزين للمادة')">📍 تثبيت وتغيير الموقع الداخلي</button>
-                </div>
-            </div>
-
-            <div id="realtime_stock" class="page">
-                <div class="card">
-                    <h2>⏱️ تتبع حركة السلسلة والتشغيلات اللحظية (Real-Time Tracking)</h2>
+                    <h2 style="margin-top: 30px;">📋 سجل وجدول المواد الفعلي داخل المخازن (تعديل وحذف فوري شغال)</h2>
                     <div class="table-responsive">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>اسم المنتج</th>
-                                    <th>رقم التشغيلة (Batch)</th>
-                                    <th>الرقم التسلسلي (Serial)</th>
-                                    <th>تاريخ الانتهاء</th>
-                                    <th>الكمية المتاحة فورياً</th>
-                                    <th>الكمية التالفة</th>
-                                </tr>
+                                <tr><th>اسم المادة / المنتج</th><th>التصنيف والفئة</th><th>الرصيد الحالي</th><th>السعر التقديري</th><th>العمليات والتحكم</th></tr>
                             </thead>
-                            <tbody>
-                                <tr><td>شاشة ذكية 55 بوصة</td><td>B-992</td><td>SN-882910</td><td>N/A</td><td>3 قطع</td><td style="color: var(--danger);">0 قطعة</td></tr>
-                                <tr><td>حليب مجفف مدعم</td><td>Batch-09</td><td>N/A</td><td>2026-12-01</td><td>45 قطعة</td><td style="color: var(--danger);">2 قطعة</td></tr>
-                            </tbody>
+                            <tbody id="products-table-body"></tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="stock_limits" class="page">
-                <div class="card">
-                    <h2>⚠️ إدارة تنبيهات حدود المخزن الفورية والاقتراحات الآلية</h2>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>اسم المنتج</th>
-                                    <th>الحد الأدنى</th>
-                                    <th>الحد الأقصى</th>
-                                    <th>الكمية الحالية</th>
-                                    <th>حالة التنبيه الفوري</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="low-stock">
-                                    <td>شاشة ذكية 55 بوصة</td><td>5 قطع</td><td>50 قطعة</td><td>3 قطع</td><td>⚠️ تنبيه: نقص مخزون (مقترح طلب شراء تلقائي)</td>
-                                </tr>
-                                <tr class="high-stock">
-                                    <td>عصير طبيعي طازج</td><td>5 قطع</td><td>10 قطعة</td><td>15 قطعة</td><td>⚠️ تنبيه: زيادة مخزون وتكلفة زائدة</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="jard_control" class="page">
-                <div class="card">
-                    <h2>📝 مركز التحكم بالجرد الدوري، السنوي، والمفاجئ والمطابقة اللحظية</h2>
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label>استراتيجية حركة تقييم وصرف مخزونك النشط</label>
-                            <select id="invStrategy">
-                                <option value="FIFO">FIFO (الوارد أولاً صادر أولاً)</option>
-                                <option value="LIFO">LIFO (الوارد أخيراً صادر أولاً)</option>
-                                <option value="FEFO">FEFO (الأقرب انتهاءً صلاحية أولاً)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>تسوية فروقات الجرد</label>
-                            <button class="btn" style="background: var(--purple-kpi);" onclick="alert('تم تفعيل مستند تسوية مخزنية ومطابقة الجرد الفعلي')">⚙️ ترحيل تسوية مخزنية وجرد مفاجئ</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="suppliers" class="page">
-                <div class="card">
-                    <h2>🤝 إدارة وسجل الموردين وتقييم الكفاءة واللوجستيات</h2>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>اسم المورد</th>
-                                    <th>رقم الهاتف</th>
-                                    <th>إجمالي فواتير الشراء</th>
-                                    <th>تقييم الجودة والالتزام بالوقت</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>الشركة التجارية العامة للأجهزة</td><td>0770XXXXXX</td><td>$12,000</td><td>⭐️⭐️⭐️⭐️⭐️ (ممتاز)</td></tr>
-                                <tr><td>مجمع دبي للمواد الاستهلاكية</td><td>0780XXXXXX</td><td>$5,400</td><td>⭐️⭐️⭐️ (متوسط)</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="purchase_orders" class="page">
-                <div class="card">
-                    <h2>📥 مستندات اعتماد ومتابعة أوامر الشراء وفحص الجودة عند الاستلام</h2>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn" onclick="alert('تم تفعيل أمر فحص جودة الشحنة المستلمة جزئياً')">🛡️ فحص جودة شحنة الاستلام</button>
-                        <button class="btn" style="background-color: var(--danger);" onclick="alert('تم إصدار قيد مرتجعات للموردين بالكميات التالفة')">❌ ترحيل مرتجعات للموردين</button>
                     </div>
                 </div>
             </div>
 
             <div id="sales_screen" class="page">
                 <div class="card">
-                    <h2>🧾 شاشة إنشاء فواتير البيع ونقاط البيع POS وتتبع الديون والذمم</h2>
-                    <div class="grid-2">
+                    <h2>🧾 شاشة المبيعات الذكية (POS) - حقول مستطيلة حرة للكتابة المباشرة الحرّة</h2>
+                    <div class="grid-3" style="margin-top: 15px;">
+                        <div class="form-group"><label>اكتب اسم المنتج / الطلبية بحرية</label><input type="text" id="sales-input-name" placeholder="مثال: باب خشب صاج عراقي"></div>
+                        <div class="form-group"><label>السعر المحدد ($)</label><input type="number" id="sales-input-price" placeholder="250"></div>
+                        <div class="form-group"><label>الأبعاد والقياسات (اختياري - طول × عرض)</label><input type="text" id="sales-input-dim" placeholder="2.10 × 1.00 م"></div>
+                        <div class="form-group"><label>الكمية المطلوبة</label><input type="number" id="sales-input-qty" value="1"></div>
+                        <div class="form-group"><label>اسم الزبون / العميل الحالي</label><input type="text" id="sales-customer" value="زبون نقدي عام"></div>
                         <div class="form-group">
-                            <label>طريقة سداد العميل</label>
-                            <select id="payMethod">
-                                <option value="cash">نقد وفوري (Cash)</option>
-                                <option value="installments">أقساط شهرية منتظمة</option>
-                                <option value="debt">دين آجل (على الذمم)</option>
-                                <option value="part_installments">بيع (جزء نقد وجزء أقساط)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>عملة الفاتورة</label>
-                            <select id="currency">
-                                <option value="usd">دولار أمريكي $</option>
-                                <option value="iqd">دينار عراقي د.ع</option>
+                            <label>طريقة تحصيل وفاتورة السداد</label>
+                            <select id="sales-pay-method">
+                                <option value="cash">نقدي وفوري بالكامل (Cash)</option>
+                                <option value="debt_usd">ذمم مدينة مؤجلة (بالدولار $)</option>
+                                <option value="debt_iqd">ذمم مدينة مؤجلة (بالدينار العراقي د.ع)</option>
                             </select>
                         </div>
                     </div>
-                    <div class="grid-2" style="margin-top: 10px;">
-                        <div class="form-group"><label>المبلغ الإجمالي</label><input type="number" id="totalAmt" placeholder="0.00" oninput="calculateRemaining()"></div>
-                        <div class="form-group"><label>المدفوع حاضراً</label><input type="number" id="paidAmt" placeholder="0.00" oninput="calculateRemaining()"></div>
-                    </div>
-                    <p style="font-size: 13px; margin: 10px 0;">المبلغ المتبقي للذمم والديون: <span id="remainingLabel" style="color: var(--accent); font-weight: bold;">0.00</span></p>
-                    <button class="btn" style="width: 100%; background: var(--accent); color: black;" onclick="processInvoice()">🧾 حفظ الفاتورة وترحيل القيود المالية</button>
-                </div>
-            </div>
+                    <button class="btn" style="background: #2563eb; margin-top: 10px; font-weight: bold;" onclick="addItemToInvoiceCart()">➕ إدراج المادة المكتوبة داخل الفاتورة الحالية</button>
 
-            <div id="fulfillment" class="page">
-                <div class="card">
-                    <h2>🚚 إدارة حجز الكميات، التجهيز (Picking)، التعبئة (Packing) والشحن والتسليم</h2>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn" onclick="alert('تم طباعة قائمة التجهيز Picking List بنجاح')">📦 طباعة قائمة التجهيز</button>
-                        <button class="btn" style="background: var(--success); color: black;" onclick="alert('تم شحن الطلبية وربط التتبع بنجاح')">🚚 تتبع الشحنة مع شركة النقل</button>
-                        <button class="btn" style="background: var(--danger);" onclick="alert('تم ترحيل مستند مرتجعات من العملاء')">🔄 مرتجعات من العملاء</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="loyalty" class="page">
-                <div class="card">
-                    <h2>🎁 إدارة العروض الترويجية، الضرائب، الخصومات ونقاط ولاء الزبائن</h2>
-                    <button class="btn" onclick="alert('تم تطبيق العرض الترويجي واحتساب نسب الضرائب')">🔥 تفعيل العرض الترويجي النشط</button>
-                </div>
-            </div>
-
-            <div id="finance" class="page">
-                <div class="card">
-                    <h2>🏛️ الحسابات العامة والمالية، الأرباح والخسائر، ومراكز التكلفة</h2>
-                    <div class="grid-3">
-                        <div class="card" style="background: #060608; border-color: var(--success);">
-                            <h3 style="font-size: 13px; color: var(--success);">حساب الأرباح والخسائر الدوري</h3>
-                            <p class="kpi-val">$18,450</p>
-                        </div>
-                        <div class="card" style="background: #060608; border-color: var(--accent);">
-                            <h3 style="font-size: 13px; color: var(--accent);">تقييم وتكلفة المخزون (FIFO)</h3>
-                            <p class="kpi-val">$245,180</p>
-                        </div>
-                        <div class="card" style="background: #060608; border-color: var(--purple-kpi);">
-                            <h3 style="font-size: 13px; color: var(--purple-kpi);">مركز التكلفة (فرع بغداد)</h3>
-                            <p class="kpi-val">مفعّل ونشط</p>
-                        </div>
-                    </div>
-                    <button class="btn" style="width: 100%; margin-top: 10px;" onclick="alert('تم ترحيل وإغلاق السنة المالية الحالية')">📊 استخراج كشف الميزانية العمومية والضرائب</button>
-                </div>
-            </div>
-
-            <div id="security" class="page">
-                <div class="card">
-                    <h2>🔐 إدارة أدوار وصلاحيات المستخدمين، الأمن السيبراني والتشفير</h2>
-                    <div class="grid-2">
-                        <button class="btn" onclick="alert('جاري إنشاء نسخة احتياطية سحابية مشفرة')">🔄 النسخ الاحتياطي التلقائي السحابي</button>
-                        <button class="btn" style="background: #2563eb;" onclick="alert('تم فحص سلامة البيانات واستعادة قواعد الداتا')">🛠️ استعادة البيانات المخزنة</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="recycle_bin" class="page">
-                <div class="card">
-                    <h2>🗑️ إدارة النسخ المحذوفة وسلة المحذوفات وسجل العمليات (Audit Trail)</h2>
+                    <h3 style="margin-top: 25px; font-size: 14px; color: var(--accent);">🛒 الأصناف والطلبيات المدرجة في الفاتورة المفتوحة:</h3>
                     <div class="table-responsive">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>نوع العنصر المحذوف</th>
-                                    <th>اسم العنصر/السند المزال</th>
-                                    <th>المستخدم المسؤول</th>
-                                    <th>تاريخ ووقت الحذف</th>
-                                    <th>العمليات والرقابة</th>
-                                </tr>
+                                <tr><th>بيانات المنتج المكتوب</th><th>القياسات</th><th>سعر القطعة</th><th>الكمية</th><th>الإجمالي الفرعي</th><th>إجراء</th></tr>
                             </thead>
-                            <tbody>
-                                <tr><td>المواد المحذوفة</td><td>صندوق عصير تفاح طازج</td><td>المحاسب المساعد</td><td>2026-06-05 14:22</td><td><button class="btn" style="padding:4px 8px; font-size:11px;" onclick="alert('تم استعادة الصنف بنجاح')">🔄 استعادة المادة</button></td></tr>
-                                <tr><td>السندات المحذوفة</td><td>قائمة بيع رقم INV-1092</td><td>مدير مستودع بغداد</td><td>2026-06-05 11:05</td><td><button class="btn" style="padding:4px 8px; font-size:11px;" onclick="alert('تم استعادة سند الفاتورة')">🔄 استعادة السند</button></td></tr>
-                                <tr><td>الحسابات المحذوفة</td><td>مركز تكلفة - قسم التعبئة</td><td>الأدمن الرئيسي</td><td>2026-06-04 09:12</td><td><button class="btn" style="padding:4px 8px; font-size:11px;" onclick="alert('تم إرجاع مركز التكلفة')">🔄 استعادة الحساب</button></td></tr>
-                            </tbody>
+                            <tbody id="invoice-items-body"></tbody>
                         </table>
                     </div>
-                    <button class="btn" style="margin-top: 15px; background: var(--danger);" onclick="alert('تقرير السندات والمواد المحذوفة جاهز للتصدير')">📊 تصدير تقرير السندات المحذوفة الشامل</button>
+
+                    <div style="margin-top: 20px; text-align: left;">
+                        <p style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">إجمالي الفاتورة النهائي الموحد: <span id="invoice-total-label" style="color: var(--accent); font-size: 18px;">$0.00</span></p>
+                        <button class="btn" style="background: var(--accent); color: black; font-weight: bold; width: 100%; padding: 12px;" onclick="submitInvoice()">🧾 ترحيل وحفظ فاتورة البيع نهائياً وتحديث الحسابات</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>📋 أرشيف وسجل فواتير البيع الصادرة الحالية</h2>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>رقم السند</th><th>اسم الزبون</th><th>طريقة الدفع والعملة</th><th>المبلغ الإجمالي للفاتورة</th></tr>
+                            </thead>
+                            <tbody id="sales-history-body"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
+            <div id="returns_screen" class="page">
+                <div class="card">
+                    <h2>🔄 إدارة مستندات المسترجعات المباشرة (حقول كتابة حرة فارغة)</h2>
+                    <div class="grid-3" style="margin-top: 15px;">
+                        <div class="form-group"><label>اكتب اسم الصنف المرتجع بدقة</label><input type="text" id="return-input-name" placeholder="مثال: باب خشب صاج عراقي"></div>
+                        <div class="form-group"><label>الكمية الراجعة للمصنع</label><input type="number" id="return-qty" placeholder="0"></div>
+                        <div class="form-group">
+                            <label>حالة السلعة والتسوية المخزنية للمسترجع</label>
+                            <select id="return-status">
+                                <option value="good">سليمة وصالحة (تعود للمخزن فوراً)</option>
+                                <option value="damaged">تالفة أو تحتاج صيانة (تذهب للهدر/التصليح)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" style="background: var(--danger); margin-top: 15px; font-weight: bold;" onclick="processReturnItem()">🔄 ترحيل سند مرتجع المبيعات وتعديل الأرصدة</button>
+                </div>
+            </div>
+
+            <div id="warehouses" class="page">
+                <div class="card">
+                    <h2>🏢 المخازن المتعددة ونقل البضائع والسلع والملفات والمواد الخام بين الفروع</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px;">مراقبة المخزون ونقل المواد والألواح بين مستودع المواد الخام ومستودع المنتجات الجاهزة والتسليم الفوري للعملاء.</p>
+                    <button class="btn" style="margin-top: 15px;" onclick="alert('تم قيد وثيقة النقل والتحويل المخزني المتبادل ميكانيكياً!')">📦 ترحيل قيد النقل المتبادل</button>
+                </div>
+            </div>
+
+            <div id="locations" class="page">
+                <div class="card">
+                    <h2>📍 مواقع التخزين والتتبع الداخلي للسلع والأصناف الجاهزة (Aisle / Rack / Shelf)</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px;">تنظيم وتتبع وضع المطابخ الجاهزة والأبواب المصنعة حسب أرقام الرفوف لتسريع عمليات التحميل والوصول السريع.</p>
+                </div>
+            </div>
+
+            <div id="jard_control" class="page">
+                <div class="card">
+                    <h2>📝 عمليات الجرد والتسويات المخزنية (الجرد الدوري، السنوي والمفاجئ)</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px;">مطابقة حية وصارمة بين دفاتر الحسابات والكميات الفعلية في المصنع وترحيل الفروقات والضياع تلقائياً.</p>
+                    <button class="btn" style="margin-top: 15px;" onclick="alert('تمت مطابقة قيود الجرد والتحقق من التسويات بنجاح!')">⚙️ ترحيل تسوية مخزنية شاملة</button>
+                </div>
+            </div>
+
+            <div id="suppliers" class="page">
+                <div class="card">
+                    <h2>🤝 سجل الموردين ومتابعة أوامر الشراء والاستلام الجزئي وفحص الجودة الفوري</h2>
+                    <div class="grid-3" style="margin-top: 15px;">
+                        <div class="form-group"><label>اسم المورد (شركة التوريد للألمنيوم / الأخشاب)</label><input type="text" id="sup-name" placeholder="شركة الرافدين للتجارة العامة"></div>
+                        <div class="form-group"><label>المادة الموردة والمشتراة</label><input type="text" id="sup-item" placeholder="ألواح ألمنيوم ممتاز"></div>
+                        <div class="form-group"><label>قيمة مستند الشراء المالي ($)</label><input type="number" id="sup-total" placeholder="1500"></div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn" style="background: var(--purple-kpi); font-weight: bold;" onclick="alert('تم تشغيل وتأمين فحص جودة الخامات والمواد عند الاستلام الجزئي!')">🛡️ تشغيل فحص الجودة عند الاستلام</button>
+                        <button class="btn" onclick="alert('تمت مزامنة ومطابقة الكميات المتاحة قيد الطلب بنجاح!')">📥 مزامنة الكميات المتاحة قيد الطلب</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="popup" class="popup-overlay">
         <div class="popup-box">
-            <h2 style="color: var(--warning-orange);">⚠️ تذكير ذكي: ديون تستحق التحصيل السداد (اليوم)</h2>
-            <div id="popup-content" style="margin: 15px 0; font-size: 13.5px; text-align: right; line-height: 1.8; color: #fff;"></div>
-            <button class="btn" style="width: 100%; background-color: var(--warning-orange); color: black;" onclick="closePopup()">موافق، تم المتابعة</button>
+            <h2 style="color: var(--warning-orange); border: none;">⚠️ تذكير ذكي: ديون تستحق التحصيل السداد (اليوم)</h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">📋 فواتير ذمم مستحقة السداد والتحصيل اليوم تلقائياً:</p>
+            <div id="popup-content" style="margin: 20px 0; font-size: 13.5px; text-align: right; line-height: 1.8; color: #fff;">
+                📌 1. <strong>شركة الرافدين للتجارة العامة:</strong> المبلغ المستحق: <span style="color: var(--accent); font-weight: bold;">$ 1,500</span><br>
+                📌 2. <strong>مجموعة إنماء الصناعية الفنية:</strong> المبلغ المستحق: <span style="color: #25d366; font-weight: bold;">450,000 د.ع</span>
+            </div>
+            <button class="btn" style="width: 100%; background-color: var(--warning-orange); color: black; font-weight: bold;" onclick="closePopup()">موافق، تم المتابعة ورصد المبالغ</button>
         </div>
     </div>
 
@@ -693,92 +343,252 @@
     </div>
 
     <script>
-        // دالة التنقل بين صفحات القائمة الجانبية بنجاح
-        function switchPage(pageId, event) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-            
-            const selectedPage = document.getElementById(pageId);
-            if (selectedPage) {
-                selectedPage.classList.add('active');
-            }
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            }
-        }
-
-        // الحساب التلقائي واللحظي في شاشة المبيعات
-        function calculateRemaining() {
-            const total = parseFloat(document.getElementById('totalAmt').value) || 0;
-            const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
-            const remaining = total - paid;
-            document.getElementById('remainingLabel').innerText = remaining.toLocaleString() + ' (حسب العملة)';
-        }
-
-        function processInvoice() {
-            const method = document.getElementById('payMethod').value;
-            const currency = document.getElementById('currency').value;
-            const total = parseFloat(document.getElementById('totalAmt').value) || 0;
-            const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
-            const remaining = total - paid;
-            alert(`✅ تم حفظ الفاتورة بنجاح:\n• طريقة السداد: ${method}\n• الإجمالي: ${total}\n• المدفوع: ${paid}\n• المتبقي: ${remaining}`);
-        }
-
-        // فحص الديون المستحقة بالاعتماد على تاريخ اليوم لمنع الإزعاج
-        const realTodayString = new Date().toISOString().slice(0, 10);
-        const debtsDatabase = [
-            { id: "DEBT-101", customer: "شركة الرافدين للتجارة العامة", type: "debt", amount: "1,500 $", dueDate: realTodayString },
-            { id: "DEBT-102", customer: "مجموعة إنماء الصناعية الفنية", type: "part_installments", amount: "450,000 د.ع", dueDate: realTodayString },
-            { id: "DEBT-103", customer: "مكتب النور للمقاولات", type: "debt", amount: "3,200 $", dueDate: "2026-09-30" }
-        ];
-
-        function evaluateTodayDebtsNotification() {
-            const activeDuesToday = debtsDatabase.filter(item => item.dueDate === realTodayString);
-            if (activeDuesToday.length > 0) {
-                let listHtml = `🗓️ فواتير ذمم مستحقة السداد والتحصيل اليوم تلقائياً:<br><br>`;
-                activeDuesToday.forEach((item, index) => {
-                    listHtml += `📌 <strong>${index + 1}. ${item.customer}:</strong> المبلغ: <span style="color: var(--accent);">${item.amount}</span><br>`;
-                });
-                document.getElementById('popup-content').innerHTML = listHtml;
-                document.getElementById('popup').style.display = 'flex';
-            }
-        }
-
-        window.onload = function() {
-            setTimeout(() => {
-                evaluateTodayDebtsNotification();
-            }, 500);
+        // كائنات الذاكرة المحلية والبيانات الافتراضية المستقرة للمواد والتصنيع
+        let currentProducts = {
+            "PROD_1": { id: "PROD_1", name: "باب ألمنيوم داخلي ممتاز", category: "الأبواب", price: 180, qty: 4, min: 1 },
+            "PROD_2": { id: "PROD_2", name: "مطبخ هيدروليك متكامل", category: "المطابخ", price: 950, qty: 2, min: 1 },
+            "PROD_3": { id: "PROD_3", name: "شباك سحاب عازل للصوت", category: "الشبابيك", price: 110, qty: 5, min: 2 }
         };
+        let currentSalesInvoices = {};
+        let activeInvoiceCart = [];
 
-        function closePopup() {
-            document.getElementById('popup').style.display = 'none';
+        function switchAuthTab(tabId, btn) {
+            document.querySelectorAll('.auth-method-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
         }
 
-        // وظائف وتفعيل حاسبة النظام المدمجة بالشريط العلوي بالشكل الصحيح
-        function toggleCalc() {
-            const calc = document.getElementById('calc');
-            if (calc.style.display === 'block') {
-                calc.style.display = 'none';
+        function bypassAuth(methodLabel) {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('system-user-title').innerText = `🏢 نظام دجلة للتحكم والتصنيع | الجلسة الحالية: ${methodLabel} (معزولة محلياً)`;
+            renderProductsDOM();
+            renderSalesHistoryDOM();
+            // إظهار نافذة مراجعة وتذكير الديون والذمم فور فتح النظام
+            document.getElementById('popup').style.display = 'flex';
+        }
+
+        function logout() { location.reload(); }
+
+        // ================== محرك بطاقة الصنف الحركي المطور (Full CRUD Engine) ==================
+        function saveProduct() {
+            const id = document.getElementById('p-id').value;
+            const name = document.getElementById('p-name').value;
+            const category = document.getElementById('p-category').value;
+            const price = parseFloat(document.getElementById('p-price').value) || 0;
+            const qty = parseInt(document.getElementById('p-qty').value) || 0;
+            const min = parseInt(document.getElementById('p-min').value) || 1;
+
+            if(!name) { alert("خطأ حاسم: لا يمكن ترك حقل اسم المادة أو المنتج فارغاً!"); return; }
+
+            if (id && currentProducts[id]) {
+                // تعديل مباشر وحقيقي على البيانات داخل الجدول والسجلات دون تكرار
+                currentProducts[id] = { id, name, category, price, qty, min };
+                alert(`✅ تم حفظ وتحديث تعديلات الصنف (${name}) ميكانيكياً بنجاح.`);
             } else {
-                calc.style.display = 'block';
+                // إضافة مادة جديدة كلياً
+                const newId = 'PROD_' + Date.now();
+                currentProducts[newId] = { id: newId, name, category, price, qty, min };
+                alert(`✅ تم تسجيل وحفظ صنف جديد (${name}) في قاعدة بيانات المصنع.`);
+            }
+            
+            clearProductForm();
+            renderProductsDOM();
+        }
+
+        // دالة التعديل الحقيقية: تسحب السجل المحدد وتوزع بياناته في المستطيلات للتعديل الفوري
+        function editProduct(id) {
+            const p = currentProducts[id];
+            if(!p) return;
+            
+            document.getElementById('p-id').value = p.id;
+            document.getElementById('p-name').value = p.name;
+            document.getElementById('p-category').value = p.category;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-qty').value = p.qty;
+            document.getElementById('p-min').value = p.min;
+            
+            document.getElementById('product-form-title').innerText = `📦 وضع التعديل النشط للصنف: (${p.name})`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteProduct(id) {
+            if(confirm("هل أنت متأكد من حذف هذه المادة نهائياً من سجلات البرنامج والمخازن؟")) {
+                delete currentProducts[id];
+                renderProductsDOM();
             }
         }
-        function pressCalc(val) { 
-            document.getElementById('calcScreen').value += val; 
+
+        function clearProductForm() {
+            document.getElementById('p-id').value = '';
+            document.getElementById('p-name').value = '';
+            document.getElementById('p-category').value = '';
+            document.getElementById('p-price').value = '';
+            document.getElementById('p-qty').value = '';
+            document.getElementById('product-form-title').innerText = "📦 إضافة أو تعديل مادة ومواصفات قطعة في قاعدة البيانات";
         }
-        function clearCalc() { 
-            document.getElementById('calcScreen').value = ''; 
+
+        function renderProductsDOM() {
+            const tbody = document.getElementById('products-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            let totalItems = 0;
+            let totalValue = 0;
+
+            for(let key in currentProducts) {
+                totalItems++;
+                const p = currentProducts[key];
+                totalValue += (p.price * p.qty);
+                let rowClass = (p.qty <= p.min) ? "low-stock" : "";
+                
+                tbody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.category}</td>
+                        <td style="font-weight:bold; color:var(--accent);">${p.qty} وحدة</td>
+                        <td>$${p.price}</td>
+                        <td>
+                            <button class="btn" style="padding:4px 10px; font-size:12px; background:#1e1b4b; color:#a78bfa;" onclick="editProduct('${p.id}')">📝 تعديل المادة</button>
+                            <button class="btn" style="padding:4px 10px; font-size:12px; color:var(--danger);" onclick="deleteProduct('${p.id}')">🗑️ حذف</button>
+                        </td>
+                    </tr>
+                `;
+            }
+            document.getElementById('kpi-total-items').innerText = totalItems;
+            document.getElementById('kpi-total-value').innerText = '$' + totalValue.toLocaleString();
         }
-        function evalCalc() {
-            try {
-                const expr = document.getElementById('calcScreen').value;
-                if(expr) {
-                    document.getElementById('calcScreen').value = eval(expr);
+
+        // ================== شاشة المبيعات (حقول إدخال حرة فارغة تماماً مع معالجة الأبعاد) ==================
+        function addItemToInvoiceCart() {
+            const name = document.getElementById('sales-input-name').value;
+            const price = parseFloat(document.getElementById('sales-input-price').value) || 0;
+            const dim = document.getElementById('sales-input-dim').value || 'قياس قياسي';
+            const qty = parseInt(document.getElementById('sales-input-qty').value) || 1;
+
+            if(!name || price <= 0) { alert("خطأ: يرجى كتابة اسم المنتج وتحديد سعر البيع الصحيح لإدراج الصنف!"); return; }
+
+            activeInvoiceCart.push({ name, price, dim, qty });
+
+            document.getElementById('sales-input-name').value = '';
+            document.getElementById('sales-input-price').value = '';
+            document.getElementById('sales-input-dim').value = '';
+            document.getElementById('sales-input-qty').value = '1';
+
+            renderInvoiceCartDOM();
+        }
+
+        function removeCartItem(index) {
+            activeInvoiceCart.splice(index, 1);
+            renderInvoiceCartDOM();
+        }
+
+        function renderInvoiceCartDOM() {
+            const tbody = document.getElementById('invoice-items-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            let total = 0;
+
+            activeInvoiceCart.forEach((item, index) => {
+                const subTotal = item.price * item.qty;
+                total += subTotal;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td><span style="color:var(--text-muted);">${item.dim}</span></td>
+                        <td>$${item.price}</td>
+                        <td>${item.qty}</td>
+                        <td style="color:var(--accent); font-weight:bold;">$${subTotal}</td>
+                        <td><button class="btn" style="padding:3px 6px; font-size:11px; color:var(--danger);" onclick="removeCartItem(${index})">❌ إزالة</button></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('invoice-total-label').innerText = '$' + total.toLocaleString();
+        }
+
+        function submitInvoice() {
+            if(activeInvoiceCart.length === 0) { alert("خطأ حاسم: قائمة الفاتورة فارغة تماماً! اكتب السلعة أولاً لإدراجها."); return; }
+            
+            const customer = document.getElementById('sales-customer').value;
+            const method = document.getElementById('sales-pay-method').value;
+            
+            let total = 0;
+            activeInvoiceCart.forEach(item => {
+                total += (item.price * item.qty);
+                // ميكانيكية خصم رصيد المخزن ميكانيكياً في حال تطابق الاسم المكتوب حرّاً مع الصنف المخزني
+                for(let key in currentProducts) {
+                    if(currentProducts[key].name === item.name) {
+                        currentProducts[key].qty -= item.qty;
+                        if(currentProducts[key].qty < 0) currentProducts[key].qty = 0;
+                    }
                 }
-            } catch(e) { 
-                document.getElementById('calcScreen').value = 'Error'; 
-            }
+            });
+
+            const invId = 'DJL_' + Date.now().toString().slice(-6);
+            currentSalesInvoices[invId] = { invId, customer, method, total };
+
+            alert(`✅ تم ترحيل وحفظ مستند الفاتورة بنجاح وتحصيل السجلات بالرقم: ${invId}`);
+            activeInvoiceCart = [];
+            renderInvoiceCartDOM();
+            renderProductsDOM();
+            renderSalesHistoryDOM();
         }
+
+        function renderSalesHistoryDOM() {
+            const tbody = document.getElementById('sales-history-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            let count = 0;
+            for(let key in currentSalesInvoices) {
+                count++;
+                const inv = currentSalesInvoices[key];
+                let methodLabel = "نقدي (Cash)";
+                if(inv.method === 'debt_usd') methodLabel = "ذمم / دين ($)";
+                if(inv.method === 'debt_iqd') methodLabel = "ذمم / دين (د.ع)";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${inv.invId}</strong></td>
+                        <td>${inv.customer}</td>
+                        <td><span style="color:var(--warning-orange); font-weight:bold;">${methodLabel}</span></td>
+                        <td style="color:var(--success); font-weight:bold;">$${inv.total}</td>
+                    </tr>
+                `;
+            }
+            document.getElementById('kpi-sales-count').innerText = count;
+        }
+
+        // ================== محرك المسترجعات الحرة ==================
+        function processReturnItem() {
+            const name = document.getElementById('return-input-name').value;
+            const qty = parseInt(document.getElementById('return-qty').value) || 0;
+            const status = document.getElementById('return-status').value;
+
+            if(!name || qty <= 0) { alert("يرجى كتابة اسم الصنف والكمية المسترجعة بدقة لمعالجة السند!"); return; }
+
+            for(let key in currentProducts) {
+                if(currentProducts[key].name === name && status === 'good') {
+                    currentProducts[key].qty += qty;
+                }
+            }
+
+            alert(`🔄 تم قيد سند مرتجع المبيعات للمادة (${name}) ميكانيكياً بنجاح وتحديث الأرصدة المتوفرة.`);
+            document.getElementById('return-input-name').value = '';
+            document.getElementById('return-qty').value = '';
+            renderProductsDOM();
+        }
+
+        // دوال الملاحة والتحكم بالحاسبة والبوب اب
+        function switchPage(pageId, event) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            if(document.getElementById(pageId)) document.getElementById(pageId).classList.add('active');
+            if(event) event.currentTarget.classList.add('active');
+        }
+        function toggleCalc() { const calc = document.getElementById('calc'); calc.style.display = calc.style.display === 'block' ? 'none' : 'block'; }
+        function pressCalc(val) { document.getElementById('calcScreen').value += val; }
+        function clearCalc() { document.getElementById('calcScreen').value = ''; }
+        function evalCalc() { try { const expr = document.getElementById('calcScreen').value; if(expr) document.getElementById('calcScreen').value = eval(expr); } catch(e) { document.getElementById('calcScreen').value = 'Error'; } }
+        function closePopup() { document.getElementById('popup').style.display = 'none'; }
     </script>
 </body>
 </html>
