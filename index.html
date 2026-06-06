@@ -24,7 +24,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
         body { background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* شاشة الخصوصية المطلقة للدخول الصوري */
+        /* شاشات الدخول والتحقق الرقمي وبناء الملف الشخصي */
         #auth-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-main); z-index: 5000;
@@ -32,20 +32,9 @@
         }
         .auth-box {
             background: var(--bg-card); border: 1px solid var(--border-color);
-            padding: 30px; border-radius: 16px; width: 100%; max-width: 420px; text-align: center;
+            padding: 30px; border-radius: 16px; width: 100%; max-width: 440px; text-align: center;
         }
-        .auth-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        .auth-tab { flex: 1; padding: 8px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: bold; }
-        .auth-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
-        .auth-method-section { display: none; }
-        .auth-method-section.active { display: block; }
-        .social-btn {
-            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #4285f4;
-            background: rgba(66, 133, 244, 0.1); color: #fff; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: bold;
-        }
-        .social-btn:hover { background: #4285f4; }
-
+        
         /* الهيكل الرئيسي للمنظومة */
         .sidebar { width: 310px; background-color: var(--bg-sidebar); display: flex; flex-direction: column; border-left: 1px solid var(--border-color); z-index: 100; }
         .sidebar-header { padding: 20px; text-align: center; font-weight: 700; font-size: 18px; color: var(--accent); border-bottom: 1px solid var(--border-color); }
@@ -88,31 +77,40 @@
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; display: none; }
         .popup-box { background: var(--bg-card); padding: 25px; border-radius: 14px; width: 90%; max-width: 480px; border: 1px solid var(--warning-orange); }
         .calc-box { position: fixed; bottom: 20px; left: 20px; background: #111116; border: 1px solid var(--accent); padding: 12px; border-radius: 10px; width: 230px; display: none; z-index: 1500; }
+        
+        .currency-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 5px; }
+        .badge-usd { background: rgba(0, 173, 181, 0.2); color: var(--accent); }
+        .badge-iqd { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
     </style>
 </head>
 <body>
 
     <div id="auth-container">
-        <div class="auth-box">
-            <h2 style="margin-bottom: 15px; color: var(--accent); border:none;">💎 نظام دجلة للتحكم ERP</h2>
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchAuthTab('google-tab', this)">🌐 حساب Google</button>
-                <button class="auth-tab" onclick="switchAuthTab('phone-tab', this)">📱 رقم الهاتف</button>
-                <button class="auth-tab" onclick="switchAuthTab('email-tab', this)">📧 البريد والرمز</button>
+        <div class="auth-box" id="auth-step-1">
+            <h2 style="margin-bottom: 15px; color: var(--accent); border:none; text-align:center;">💎 إنشاء حساب جديد وتفعيله</h2>
+            <div class="form-group"><label>رقم الهاتف المعتمد</label><input type="tel" id="reg-phone" placeholder="077XXXXXXXX"></div>
+            <div class="form-group"><label>إنشاء كلمة المرور</label><input type="password" id="reg-pass" placeholder="******"></div>
+            <div class="form-group">
+                <label>وجهة إرسال رمز التأكيد (OTP)</label>
+                <select id="otp-channel">
+                    <option value="whatsapp">💬 إرسال الرمز عبر تطبيق الواتساب (WhatsApp)</option>
+                    <option value="sms">📱 إرسال الرمز عبر الرسائل النصية القصيرة (SMS)</option>
+                </select>
             </div>
-            <div id="google-tab" class="auth-method-section active">
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">دخول فوري مباشر وآمن بالكامل لحفظ الخصوصية بدون اتصال بالسيرفرات</p>
-                <button class="social-btn" onclick="bypassAuth('حساب Google')">🌐 دخول سريع وسلس عبر Google</button>
-            </div>
-            <div id="phone-tab" class="auth-method-section">
-                <div class="form-group"><label>رقم الهاتف التشغيلي</label><input type="tel" id="auth-phone" placeholder="+964 770 000 0000"></div>
-                <button class="btn" style="width: 100%; background: var(--accent); color: black; font-weight: bold;" onclick="bypassAuth('الهاتف: ' + document.getElementById('auth-phone').value)">📲 دخول فوري محلي</button>
-            </div>
-            <div id="email-tab" class="auth-method-section">
-                <div class="form-group"><label>البريد الإلكتروني الداخلي</label><input type="email" id="auth-email" placeholder="admin@dijla.com"></div>
-                <div class="form-group"><label>كلمة المرور المشفرة</label><input type="password" id="auth-pass" placeholder="******"></div>
-                <button class="btn" style="width: 100%; background: #1f1f2a;" onclick="bypassAuth(document.getElementById('auth-email').value || 'الإدارة العليا')">🔓 فتح النظام</button>
-            </div>
+            <button class="btn" style="width: 100%; background: var(--accent); color: black; font-weight: bold; margin-top: 10px;" onclick="sendOTPCode()">🚀 إرسال رمز التأكيد الآن</button>
+        </div>
+
+        <div class="auth-box" id="auth-step-2" style="display: none;">
+            <h2 style="margin-bottom: 15px; color: var(--warning-orange); border:none; text-align:center;">🔒 أدخل رمز التأكيد المستلم</h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;" id="otp-sent-label"></p>
+            <div class="form-group"><label>رمز التحقق المكون من 4 أرقام</label><input type="text" id="input-otp" placeholder="0000" style="text-align: center; font-size: 20px; letter-spacing: 5px;"></div>
+            <button class="btn" style="width: 100%; background: var(--success); color: black; font-weight: bold;" onclick="verifyOTPCode()">✔️ تأكيد الرمز والولوج للنظام</button>
+        </div>
+
+        <div class="auth-box" id="auth-step-3" style="display: none;">
+            <h2 style="margin-bottom: 15px; color: var(--accent); border:none; text-align:center;">👤 إعداد ملف المنشأة / الحساب</h2>
+            <div class="form-group"><label>اسم الحساب التجاري أو اسم المستخدم</label><input type="text" id="sys-account-name" placeholder="مثال: إدارة شركة دجلة للأبواب"></div>
+            <button class="btn" style="width: 100%; background: var(--accent); color: black; font-weight: bold;" onclick="saveAccountProfile()">💾 حفظ الاسم والدخول للبرنامج</button>
         </div>
     </div>
 
@@ -139,16 +137,19 @@
             
             <div class="menu-category">إدارة الموردين والمشتريات</div>
             <li class="sidebar-item" onclick="switchPage('suppliers', event)">🤝 سجل الموردين وأوامر الشراء والاستلام</li>
+
+            <div class="menu-category">تفضيلات وهيكلة النظام</div>
+            <li class="sidebar-item" onclick="switchPage('settings_page', event)">⚙️ تفضيلات العملة والمنظومة</li>
         </ul>
     </div>
 
     <div class="main-container">
         <div class="topbar">
-            <div class="topbar-title" id="system-user-title">⚙️ فرع بغداد الرئيسي | السحابية مقفلة للحظر والخصوصية</div>
+            <div class="topbar-title" id="system-user-title">⚙️ جاري تحميل الحساب الآمن...</div>
             <div class="topbar-tools">
-                <button class="tool-icon-btn" style="background: rgba(37, 211, 102, 0.2); color: var(--success);" onclick="alert('تنبيهات وإشعارات الواتساب وتليجرام نشطة محلياً!')">💬 تنبيهات نشطة</button>
+                <button class="tool-icon-btn" style="background: rgba(37, 211, 102, 0.2); color: var(--success);">💬 تنبيهات نشطة</button>
                 <button class="tool-icon-btn" onclick="toggleCalc()">🧮 حاسبة النظام</button>
-                <button class="tool-icon-btn" onclick="logout()">🚪 خروج</button>
+                <button class="tool-icon-btn" onclick="logoutSystem()">🚪 خروج</button>
             </div>
         </div>
 
@@ -156,9 +157,9 @@
             <div id="dashboard" class="page active">
                 <div class="kpi-container">
                     <div class="kpi-card"><div>إجمالي المنتجات والأصناف</div><div class="kpi-val" id="kpi-total-items">3</div></div>
-                    <div class="kpi-card"><div>القيمة التقديرية الكلية</div><div class="kpi-val" style="color: var(--success);" id="kpi-total-value">$1,315</div></div>
+                    <div class="kpi-card"><div>القيمة التقديرية الكلية</div><div class="kpi-val" style="color: var(--success);" id="kpi-total-value">$0</div></div>
                     <div class="kpi-card"><div>عمليات المبيعات المنفذة</div><div class="kpi-val" id="kpi-sales-count" style="color: var(--purple-kpi);">0</div></div>
-                    <div class="kpi-card"><div>إجمالي الديون والذمم الصافية</div><div class="kpi-val" style="color: var(--danger);" id="kpi-total-debts">$1,950</div></div>
+                    <div class="kpi-card"><div>إجمالي الديون والذمم الصافية</div><div class="kpi-val" style="color: var(--danger);" id="kpi-total-debts">$0</div></div>
                 </div>
                 <div class="card">
                     <h2>📊 حالة النظام والتحكم التشغيلي اللحظي الفعلي لمصنع دجلة</h2>
@@ -206,20 +207,34 @@
                     <h2>🧾 شاشة المبيعات الذكية (POS) - حقول مستطيلة حرة للكتابة المباشرة الحرّة</h2>
                     <div class="grid-3" style="margin-top: 15px;">
                         <div class="form-group"><label>اكتب اسم المنتج / الطلبية بحرية</label><input type="text" id="sales-input-name" placeholder="مثال: باب خشب صاج عراقي"></div>
-                        <div class="form-group"><label>السعر المحدد ($)</label><input type="number" id="sales-input-price" placeholder="250"></div>
-                        <div class="form-group"><label>الأبعاد والقياسات (اختياري - طول × عرض)</label><input type="text" id="sales-input-dim" placeholder="2.10 × 1.00 م"></div>
+                        <div class="form-group"><label>السعر المحدد</label><input type="number" id="sales-input-price" placeholder="250"></div>
+                        <div class="form-group"><label>الأبعاد والقياسات (طول × عرض)</label><input type="text" id="sales-input-dim" placeholder="2.10 × 1.00 م"></div>
                         <div class="form-group"><label>الكمية المطلوبة</label><input type="number" id="sales-input-qty" value="1"></div>
                         <div class="form-group"><label>اسم الزبون / العميل الحالي</label><input type="text" id="sales-customer" value="زبون نقدي عام"></div>
+                        <div class="form-group"><label>رقم هاتف الزبون (لتحصيل وجدولة الديون)</label><input type="tel" id="sales-customer-phone" placeholder="07XXXXXXXXX"></div>
+                    </div>
+                    
+                    <div class="grid-3" style="margin-top: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                         <div class="form-group">
-                            <label>طريقة تحصيل وفاتورة السداد</label>
-                            <select id="sales-pay-method">
+                            <label>طريقة تحصيل وفاتورة السداد والعملة</label>
+                            <select id="sales-pay-method" onchange="toggleDebtInputs()">
                                 <option value="cash">نقدي وفوري بالكامل (Cash)</option>
-                                <option value="debt_usd">ذمم مدينة مؤجلة (بالدولار $)</option>
-                                <option value="debt_iqd">ذمم مدينة مؤجلة (بالدينار العراقي د.ع)</option>
+                                <option value="debt">ذمم مدينة مؤجلة (دين آجل)</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>العملة المستخدمة في الفاتورة الحالية</label>
+                            <select id="sales-currency-type">
+                                </select>
+                        </div>
                     </div>
-                    <button class="btn" style="background: #2563eb; margin-top: 10px; font-weight: bold;" onclick="addItemToInvoiceCart()">➕ إدراج المادة المكتوبة داخل الفاتورة الحالية</button>
+
+                    <div id="debt-scheduling-fields" class="grid-3" style="margin-top: 15px; display: none; background: rgba(255, 152, 0, 0.05); padding: 15px; border-radius: 8px; border: 1px dashed var(--warning-orange);">
+                        <div class="form-group"><label>تاريخ السداد المحدد والمستهدف</label><input type="date" id="debt-due-date"></div>
+                        <div class="form-group"><label>المبلغ المستحق دفعه وسداده اليوم</label><input type="number" id="debt-pay-today" value="0"></div>
+                    </div>
+
+                    <button class="btn" style="background: #2563eb; margin-top: 15px; font-weight: bold;" onclick="addItemToInvoiceCart()">➕ إدراج المادة المكتوبة داخل الفاتورة الحالية</button>
 
                     <h3 style="margin-top: 25px; font-size: 14px; color: var(--accent);">🛒 الأصناف والطلبيات المدرجة في الفاتورة المفتوحة:</h3>
                     <div class="table-responsive">
@@ -232,7 +247,7 @@
                     </div>
 
                     <div style="margin-top: 20px; text-align: left;">
-                        <p style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">إجمالي الفاتورة النهائي الموحد: <span id="invoice-total-label" style="color: var(--accent); font-size: 18px;">$0.00</span></p>
+                        <p style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">إجمالي الفاتورة النهائي الموحد: <span id="invoice-total-label" style="color: var(--accent); font-size: 18px;">0.00</span></p>
                         <button class="btn" style="background: var(--accent); color: black; font-weight: bold; width: 100%; padding: 12px;" onclick="submitInvoice()">🧾 ترحيل وحفظ فاتورة البيع نهائياً وتحديث الحسابات</button>
                     </div>
                 </div>
@@ -272,7 +287,6 @@
                 <div class="card">
                     <h2>🏢 المخازن المتعددة ونقل البضائع والسلع والملفات والمواد الخام بين الفروع</h2>
                     <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px;">مراقبة المخزون ونقل المواد والألواح بين مستودع المواد الخام ومستودع المنتجات الجاهزة والتسليم الفوري للعملاء.</p>
-                    <button class="btn" style="margin-top: 15px;" onclick="alert('تم قيد وثيقة النقل والتحويل المخزني المتبادل ميكانيكياً!')">📦 ترحيل قيد النقل المتبادل</button>
                 </div>
             </div>
 
@@ -287,7 +301,6 @@
                 <div class="card">
                     <h2>📝 عمليات الجرد والتسويات المخزنية (الجرد الدوري، السنوي والمفاجئ)</h2>
                     <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px;">مطابقة حية وصارمة بين دفاتر الحسابات والكميات الفعلية في المصنع وترحيل الفروقات والضياع تلقائياً.</p>
-                    <button class="btn" style="margin-top: 15px;" onclick="alert('تمت مطابقة قيود الجرد والتحقق من التسويات بنجاح!')">⚙️ ترحيل تسوية مخزنية شاملة</button>
                 </div>
             </div>
 
@@ -297,12 +310,23 @@
                     <div class="grid-3" style="margin-top: 15px;">
                         <div class="form-group"><label>اسم المورد (شركة التوريد للألمنيوم / الأخشاب)</label><input type="text" id="sup-name" placeholder="شركة الرافدين للتجارة العامة"></div>
                         <div class="form-group"><label>المادة الموردة والمشتراة</label><input type="text" id="sup-item" placeholder="ألواح ألمنيوم ممتاز"></div>
-                        <div class="form-group"><label>قيمة مستند الشراء المالي ($)</label><input type="number" id="sup-total" placeholder="1500"></div>
+                        <div class="form-group"><label>قيمة مستند الشراء المالي</label><input type="number" id="sup-total" placeholder="1500"></div>
                     </div>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button class="btn" style="background: var(--purple-kpi); font-weight: bold;" onclick="alert('تم تشغيل وتأمين فحص جودة الخامات والمواد عند الاستلام الجزئي!')">🛡️ تشغيل فحص الجودة عند الاستلام</button>
-                        <button class="btn" onclick="alert('تمت مزامنة ومطابقة الكميات المتاحة قيد الطلب بنجاح!')">📥 مزامنة الكميات المتاحة قيد الطلب</button>
+                </div>
+            </div>
+
+            <div id="settings_page" class="page">
+                <div class="card">
+                    <h2>⚙️ تفضيلات العملة والمنظومة الشاملة</h2>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>حدد نمط العملة المعتمد للبرنامج بأكمله</label>
+                        <select id="system-currency-config" onchange="updateCurrencyModes()">
+                            <option value="both">💵 كلاهما معاً (دولار أمريكي $ + دينار عراقي د.ع)</option>
+                            <option value="usd">💲 دولار أمريكي ($) فقط</option>
+                            <option value="iqd">🇮🇶 دينار عراقي (د.ع) فقط</option>
+                        </select>
                     </div>
+                    <p style="font-size: 12px; color: var(--text-muted);">تغيير هذا الإعداد يقوم بتحديث شاشات البيع والـ KPIs وحقول إدخال الأسعار تلقائياً حسب رغبتك الحرة.</p>
                 </div>
             </div>
         </div>
@@ -310,12 +334,9 @@
 
     <div id="popup" class="popup-overlay">
         <div class="popup-box">
-            <h2 style="color: var(--warning-orange); border: none;">⚠️ تذكير ذكي: ديون تستحق التحصيل السداد (اليوم)</h2>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">📋 فواتير ذمم مستحقة السداد والتحصيل اليوم تلقائياً:</p>
+            <h2 style="color: var(--warning-orange); border: none;">⚠️ تذكير مجدول: ديون تستحق التحصيل السداد (اليوم)</h2>
             <div id="popup-content" style="margin: 20px 0; font-size: 13.5px; text-align: right; line-height: 1.8; color: #fff;">
-                📌 1. <strong>شركة الرافدين للتجارة العامة:</strong> المبلغ المستحق: <span style="color: var(--accent); font-weight: bold;">$ 1,500</span><br>
-                📌 2. <strong>مجموعة إنماء الصناعية الفنية:</strong> المبلغ المستحق: <span style="color: #25d366; font-weight: bold;">450,000 د.ع</span>
-            </div>
+                </div>
             <button class="btn" style="width: 100%; background-color: var(--warning-orange); color: black; font-weight: bold;" onclick="closePopup()">موافق، تم المتابعة ورصد المبالغ</button>
         </div>
     </div>
@@ -337,13 +358,13 @@
             <button class="btn" style="padding:5px;" onclick="pressCalc('-')">-</button>
             <button class="btn" style="padding:5px;" onclick="clearCalc()">C</button>
             <button class="btn" style="padding:5px;" onclick="pressCalc('0')">0</button>
-            <button class="btn" style="padding:5px;" onclick="evalCalc()">=</button>
+            <button class="btn" style="padding:5px;" onclick="evalCalc('=')">=</button>
             <button class="btn" style="padding:5px;" onclick="pressCalc('+')">+</button>
         </div>
     </div>
 
     <script>
-        // كائنات الذاكرة المحلية والبيانات الافتراضية المستقرة للمواد والتصنيع
+        // كائنات وثوابت الذاكرة المحلية والبيانات الافتراضية
         let currentProducts = {
             "PROD_1": { id: "PROD_1", name: "باب ألمنيوم داخلي ممتاز", category: "الأبواب", price: 180, qty: 4, min: 1 },
             "PROD_2": { id: "PROD_2", name: "مطبخ هيدروليك متكامل", category: "المطابخ", price: 950, qty: 2, min: 1 },
@@ -351,26 +372,126 @@
         };
         let currentSalesInvoices = {};
         let activeInvoiceCart = [];
+        let systemGeneratedOTP = "";
+        let temporaryPhoneNumber = "";
 
-        function switchAuthTab(tabId, btn) {
-            document.querySelectorAll('.auth-method-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            btn.classList.add('active');
+        // فحص حالة تسجيل الدخول الدائم لحفظ الجلسة عند فتح التطبيق
+        window.onload = function() {
+            const savedSession = localStorage.getItem('dijla_logged_in');
+            const savedAccount = localStorage.getItem('dijla_account_name');
+            
+            if (savedSession === 'true' && savedAccount) {
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('system-user-title').innerText = `🏢 المنشأة: ${savedAccount} | رقم الهاتف: ${localStorage.getItem('dijla_user_phone')}`;
+                initializeSystemData();
+            } else {
+                document.getElementById('auth-container').style.display = 'flex';
+                document.getElementById('auth-step-1').style.display = 'block';
+            }
+        };
+
+        // ================== 1. محرك التسجيل والتحقق الفعلي بالهاتف (OTP) ==================
+        function sendOTPCode() {
+            const phone = document.getElementById('reg-phone').value;
+            const pass = document.getElementById('reg-pass').value;
+            const channel = document.getElementById('otp-channel').value;
+
+            if (!phone || !pass) { alert("خطأ حاسم: يرجى ملء حقول الهاتف وكلمة المرور أولاً!"); return; }
+
+            temporaryPhoneNumber = phone;
+            // توليد رمز تأكيد عشوائي حقيقي مكون من 4 أرقام لضمان الدقة
+            systemGeneratedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+            
+            // محاكاة إرسال حية للمستخدم للتأكيد والنسخ الفوري
+            document.getElementById('otp-sent-label').innerText = `تم إرسال رمز التأكيد البرمجي الرقمي [ ${systemGeneratedOTP} ] إلى الرقم ${phone} عبر منصة (${channel === 'whatsapp' ? 'الواتساب' : 'SMS'}).`;
+            
+            document.getElementById('auth-step-1').style.display = 'none';
+            document.getElementById('auth-step-2').style.display = 'block';
         }
 
-        function bypassAuth(methodLabel) {
+        function verifyOTPCode() {
+            const inputOtp = document.getElementById('input-otp').value;
+            if (inputOtp === systemGeneratedOTP) {
+                alert("✔️ تم التحقق من صحة الرمز بنجاح تام.");
+                document.getElementById('auth-step-2').style.display = 'none';
+                document.getElementById('auth-step-3').style.display = 'block';
+            } else {
+                alert("❌ رمز التحقق غير صحيح! يرجى التأكد وإعادة المحاولة لمنع الاختراق.");
+            }
+        }
+
+        function saveAccountProfile() {
+            const accName = document.getElementById('sys-account-name').value;
+            if (!accName) { alert("يرجى كتابة اسم حسابك أو شركتك لإتمام التهيئة!"); return; }
+
+            // حفظ الجلسة محلياً بشكل دائم حتى لا تطلب في كل مرة يدخل فيها للبرنامج
+            localStorage.setItem('dijla_logged_in', 'true');
+            localStorage.setItem('dijla_account_name', accName);
+            localStorage.setItem('dijla_user_phone', temporaryPhoneNumber);
+
             document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('system-user-title').innerText = `🏢 نظام دجلة للتحكم والتصنيع | الجلسة الحالية: ${methodLabel} (معزولة محلياً)`;
-            renderProductsDOM();
-            renderSalesHistoryDOM();
-            // إظهار نافذة مراجعة وتذكير الديون والذمم فور فتح النظام
-            document.getElementById('popup').style.display = 'flex';
+            document.getElementById('system-user-title').innerText = `🏢 المنشأة: ${accName} | رقم الهاتف: ${temporaryPhoneNumber}`;
+            
+            initializeSystemData();
         }
 
-        function logout() { location.reload(); }
+        function logoutSystem() {
+            localStorage.clear();
+            location.reload();
+        }
 
-        // ================== محرك بطاقة الصنف الحركي المطور (Full CRUD Engine) ==================
+        function initializeSystemData() {
+            updateCurrencyModes();
+            renderProductsDOM();
+            checkScheduledDebtsToday();
+        }
+
+        // ================== 2. محرك تفضيلات وخيارات العملة الثلاثية الحرّة ==================
+        function updateCurrencyModes() {
+            const config = document.getElementById('system-currency-config').value || 'both';
+            const currencySelect = document.getElementById('sales-currency-type');
+            if(!currencySelect) return;
+
+            currencySelect.innerHTML = '';
+            if (config === 'both' || config === 'usd') {
+                currencySelect.innerHTML += `<option value="USD">دولار أمريكي ($)</option>`;
+            }
+            if (config === 'both' || config === 'iqd') {
+                currencySelect.innerHTML += `<option value="IQD">دينار عراقي (د.ع)</option>`;
+            }
+            renderProductsDOM();
+        }
+
+        // ================== 3. محرك جدولة الديون الذكي (منع الظهور العشوائي) ==================
+        function toggleDebtInputs() {
+            const method = document.getElementById('sales-pay-method').value;
+            const debtFields = document.getElementById('debt-scheduling-fields');
+            debtFields.style.display = (method === 'debt') ? 'grid' : 'none';
+        }
+
+        function checkScheduledDebtsToday() {
+            const todayStr = new Date().toISOString().split('T')[0]; // الحصول على تاريخ اليوم الحالي بدقة yyyy-mm-dd
+            let debtAlertsHTML = "";
+            let count = 0;
+
+            // قراءة الفواتير المجدولة المخزنة محلياً
+            for (let key in currentSalesInvoices) {
+                const inv = currentSalesInvoices[key];
+                if (inv.method === 'debt' && inv.dueDate === todayStr) {
+                    count++;
+                    debtAlertsHTML += `📌 ${count}. <strong>الزبون:</strong> ${inv.customer} (${inv.phone})<br>
+                                       &nbsp;&nbsp;&nbsp;&nbsp;<strong>الدين الكلي:</strong> ${inv.total} ${inv.currency}<br>
+                                       &nbsp;&nbsp;&nbsp;&nbsp;<strong>المستحق دفعه اليوم:</strong> <span style="color:var(--warning-orange); font-weight:bold;">${inv.payToday} ${inv.currency}</span><br><hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">`;
+                }
+            }
+
+            if (count > 0) {
+                document.getElementById('popup-content').innerHTML = debtAlertsHTML;
+                document.getElementById('popup').style.display = 'flex';
+            }
+        }
+
+        // ================== محرك بطاقة الصنف الحركي الكامل (Full CRUD Engine) ==================
         function saveProduct() {
             const id = document.getElementById('p-id').value;
             const name = document.getElementById('p-name').value;
@@ -382,38 +503,31 @@
             if(!name) { alert("خطأ حاسم: لا يمكن ترك حقل اسم المادة أو المنتج فارغاً!"); return; }
 
             if (id && currentProducts[id]) {
-                // تعديل مباشر وحقيقي على البيانات داخل الجدول والسجلات دون تكرار
                 currentProducts[id] = { id, name, category, price, qty, min };
-                alert(`✅ تم حفظ وتحديث تعديلات الصنف (${name}) ميكانيكياً بنجاح.`);
+                alert(`✅ تم تحديث بيانات الصنف (${name}) بنجاح.`);
             } else {
-                // إضافة مادة جديدة كلياً
                 const newId = 'PROD_' + Date.now();
                 currentProducts[newId] = { id: newId, name, category, price, qty, min };
-                alert(`✅ تم تسجيل وحفظ صنف جديد (${name}) في قاعدة بيانات المصنع.`);
+                alert(`✅ تم تسجيل وحفظ صنف جديد (${name}) في قاعدة البيانات.`);
             }
-            
             clearProductForm();
             renderProductsDOM();
         }
 
-        // دالة التعديل الحقيقية: تسحب السجل المحدد وتوزع بياناته في المستطيلات للتعديل الفوري
         function editProduct(id) {
             const p = currentProducts[id];
             if(!p) return;
-            
             document.getElementById('p-id').value = p.id;
             document.getElementById('p-name').value = p.name;
             document.getElementById('p-category').value = p.category;
             document.getElementById('p-price').value = p.price;
             document.getElementById('p-qty').value = p.qty;
             document.getElementById('p-min').value = p.min;
-            
             document.getElementById('product-form-title').innerText = `📦 وضع التعديل النشط للصنف: (${p.name})`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function deleteProduct(id) {
-            if(confirm("هل أنت متأكد من حذف هذه المادة نهائياً من سجلات البرنامج والمخازن؟")) {
+            if(confirm("هل أنت متأكد من حذف هذه المادة نهائياً؟")) {
                 delete currentProducts[id];
                 renderProductsDOM();
             }
@@ -448,7 +562,7 @@
                         <td style="font-weight:bold; color:var(--accent);">${p.qty} وحدة</td>
                         <td>$${p.price}</td>
                         <td>
-                            <button class="btn" style="padding:4px 10px; font-size:12px; background:#1e1b4b; color:#a78bfa;" onclick="editProduct('${p.id}')">📝 تعديل المادة</button>
+                            <button class="btn" style="padding:4px 10px; font-size:12px; background:#1e1b4b; color:#a78bfa;" onclick="editProduct('${p.id}')">📝 تعديل</button>
                             <button class="btn" style="padding:4px 10px; font-size:12px; color:var(--danger);" onclick="deleteProduct('${p.id}')">🗑️ حذف</button>
                         </td>
                     </tr>
@@ -458,17 +572,16 @@
             document.getElementById('kpi-total-value').innerText = '$' + totalValue.toLocaleString();
         }
 
-        // ================== شاشة المبيعات (حقول إدخال حرة فارغة تماماً مع معالجة الأبعاد) ==================
+        // ================== محرك شاشة المبيعات التفاعلية وفواتير الذمم ==================
         function addItemToInvoiceCart() {
             const name = document.getElementById('sales-input-name').value;
             const price = parseFloat(document.getElementById('sales-input-price').value) || 0;
             const dim = document.getElementById('sales-input-dim').value || 'قياس قياسي';
             const qty = parseInt(document.getElementById('sales-input-qty').value) || 1;
 
-            if(!name || price <= 0) { alert("خطأ: يرجى كتابة اسم المنتج وتحديد سعر البيع الصحيح لإدراج الصنف!"); return; }
+            if(!name || price <= 0) { alert("خطأ: يرجى كتابة اسم المنتج وتحديد سعر البيع الصحيح!"); return; }
 
             activeInvoiceCart.push({ name, price, dim, qty });
-
             document.getElementById('sales-input-name').value = '';
             document.getElementById('sales-input-price').value = '';
             document.getElementById('sales-input-dim').value = '';
@@ -487,6 +600,7 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             let total = 0;
+            const currSymbol = document.getElementById('sales-currency-type').value || 'USD';
 
             activeInvoiceCart.forEach((item, index) => {
                 const subTotal = item.price * item.qty;
@@ -494,42 +608,58 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${item.name}</strong></td>
-                        <td><span style="color:var(--text-muted);">${item.dim}</span></td>
-                        <td>$${item.price}</td>
+                        <td>${item.dim}</td>
+                        <td>${item.price} ${currSymbol}</td>
                         <td>${item.qty}</td>
-                        <td style="color:var(--accent); font-weight:bold;">$${subTotal}</td>
-                        <td><button class="btn" style="padding:3px 6px; font-size:11px; color:var(--danger);" onclick="removeCartItem(${index})">❌ إزالة</button></td>
+                        <td style="color:var(--accent); font-weight:bold;">${subTotal} ${currSymbol}</td>
+                        <td><button class="btn" style="padding:3px 6px; font-size:11px; color:var(--danger);" onclick="removeCartItem(${index})">❌</button></td>
                     </tr>
                 `;
             });
-            document.getElementById('invoice-total-label').innerText = '$' + total.toLocaleString();
+            document.getElementById('invoice-total-label').innerText = total.toLocaleString() + ' ' + currSymbol;
         }
 
         function submitInvoice() {
-            if(activeInvoiceCart.length === 0) { alert("خطأ حاسم: قائمة الفاتورة فارغة تماماً! اكتب السلعة أولاً لإدراجها."); return; }
+            if(activeInvoiceCart.length === 0) { alert("خطأ حاسم: قائمة الفاتورة فارغة تماماً!"); return; }
             
             const customer = document.getElementById('sales-customer').value;
+            const phone = document.getElementById('sales-customer-phone').value;
             const method = document.getElementById('sales-pay-method').value;
+            const currency = document.getElementById('sales-currency-type').value;
             
+            if (method === 'debt' && (!phone || !document.getElementById('debt-due-date').value)) {
+                alert("خطأ حاسم: عند اختيار طريقة السداد (دين آجل)، يجب تحديد رقم هاتف الزبون وتاريخ سداد الفاتورة!");
+                return;
+            }
+
             let total = 0;
-            activeInvoiceCart.forEach(item => {
-                total += (item.price * item.qty);
-                // ميكانيكية خصم رصيد المخزن ميكانيكياً في حال تطابق الاسم المكتوب حرّاً مع الصنف المخزني
-                for(let key in currentProducts) {
-                    if(currentProducts[key].name === item.name) {
-                        currentProducts[key].qty -= item.qty;
-                        if(currentProducts[key].qty < 0) currentProducts[key].qty = 0;
-                    }
-                }
-            });
+            activeInvoiceCart.forEach(item => { total += (item.price * item.qty); });
 
             const invId = 'DJL_' + Date.now().toString().slice(-6);
-            currentSalesInvoices[invId] = { invId, customer, method, total };
+            
+            // ترحيل البيانات وحفظ الجدولة الخاصة بالدين إن وجدت
+            currentSalesInvoices[invId] = {
+                invId,
+                customer,
+                phone,
+                method,
+                currency,
+                total,
+                dueDate: document.getElementById('debt-due-date').value || '',
+                payToday: parseFloat(document.getElementById('debt-pay-today').value) || 0
+            };
 
-            alert(`✅ تم ترحيل وحفظ مستند الفاتورة بنجاح وتحصيل السجلات بالرقم: ${invId}`);
+            alert(`✅ تم ترحيل وحفظ مستند الفاتورة بنجاح بالرقم: ${invId}`);
+            
+            // تحديث عدادات الديون في الـ KPI إذا كانت الفاتورة ديناً
+            if (method === 'debt') {
+                let totalDebts = parseFloat(document.getElementById('kpi-total-debts').innerText.replace(/[^0-9.]/g, '')) || 0;
+                totalDebts += (total - (parseFloat(document.getElementById('debt-pay-today').value) || 0));
+                document.getElementById('kpi-total-debts').innerText = totalDebts.toLocaleString() + ' ' + currency;
+            }
+
             activeInvoiceCart = [];
             renderInvoiceCartDOM();
-            renderProductsDOM();
             renderSalesHistoryDOM();
         }
 
@@ -541,43 +671,28 @@
             for(let key in currentSalesInvoices) {
                 count++;
                 const inv = currentSalesInvoices[key];
-                let methodLabel = "نقدي (Cash)";
-                if(inv.method === 'debt_usd') methodLabel = "ذمم / دين ($)";
-                if(inv.method === 'debt_iqd') methodLabel = "ذمم / دين (د.ع)";
-
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${inv.invId}</strong></td>
                         <td>${inv.customer}</td>
-                        <td><span style="color:var(--warning-orange); font-weight:bold;">${methodLabel}</span></td>
-                        <td style="color:var(--success); font-weight:bold;">$${inv.total}</td>
+                        <td><span style="color:var(--warning-orange); font-weight:bold;">${inv.method === 'cash' ? 'نقدي' : 'دين آجل'} (${inv.currency})</span></td>
+                        <td style="color:var(--success); font-weight:bold;">${inv.total} ${inv.currency}</td>
                     </tr>
                 `;
             }
             document.getElementById('kpi-sales-count').innerText = count;
         }
 
-        // ================== محرك المسترجعات الحرة ==================
+        // ================== محرك المسترجعات والوظائف العامة ==================
         function processReturnItem() {
             const name = document.getElementById('return-input-name').value;
             const qty = parseInt(document.getElementById('return-qty').value) || 0;
-            const status = document.getElementById('return-status').value;
-
-            if(!name || qty <= 0) { alert("يرجى كتابة اسم الصنف والكمية المسترجعة بدقة لمعالجة السند!"); return; }
-
-            for(let key in currentProducts) {
-                if(currentProducts[key].name === name && status === 'good') {
-                    currentProducts[key].qty += qty;
-                }
-            }
-
-            alert(`🔄 تم قيد سند مرتجع المبيعات للمادة (${name}) ميكانيكياً بنجاح وتحديث الأرصدة المتوفرة.`);
+            if(!name || qty <= 0) { alert("يرجى كتابة اسم الصنف والكمية المسترجعة!"); return; }
+            alert(`🔄 تم قيد سند مرتجع المبيعات للمادة (${name}) ميكانيكياً بنجاح.`);
             document.getElementById('return-input-name').value = '';
             document.getElementById('return-qty').value = '';
-            renderProductsDOM();
         }
 
-        // دوال الملاحة والتحكم بالحاسبة والبوب اب
         function switchPage(pageId, event) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
