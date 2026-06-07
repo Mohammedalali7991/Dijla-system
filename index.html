@@ -68,7 +68,14 @@
                     <a href="#" onclick="switchTab('suppliers')" class="menu-item" id="tab-suppliers"><i class="fas fa-people-carry"></i> ديون وحسابات الموردين</a>
                     <a href="#" onclick="switchTab('debts')" class="menu-item" id="tab-debts"><i class="fas fa-file-invoice-dollar"></i> أقساط الزبائن والديون</a>
                     <a href="#" onclick="switchTab('reports')" class="menu-item" id="tab-reports"><i class="fas fa-history"></i> كشف الفواتير والتقارير</a>
-                </nav>
+                   <a href="#" onclick="switchTab('store-transfer')" class="menu-item" id="tab-store-transfer"><i class="fas fa-truck-loading"></i> التنقل بين المخازن</a>
+          <a href="#" onclick="switchTab('inventory-settlement')" class="menu-item" id="tab-inventory-settlement"><i class="fas fa-warehouse"></i> تسوية مخزنية</a>
+          <a href="#" onclick="openCalculatorPopup()" class="menu-item" id="tab-calculator"><i class="fas fa-calculator"></i> الحاسبة السريعة</a>
+          
+          <a href="#" onclick="switchTab('deleted-accounts')" class="menu-item" id="tab-deleted-accounts"><i class="fas fa-user-slash"></i> الحسابات المحذوفة</a>
+          <a href="#" onclick="switchTab('deleted-bills')" class="menu-item" id="tab-deleted-bills"><i class="fas fa-file-excel"></i> القوائم المحذوفة</a>
+          <a href="#" onclick="switchTab('deleted-items')" class="menu-item" id="tab-deleted-items"><i class="fas fa-boxes"></i> المواد المحذوفة</a>
+       </nav>
             </aside>
 
             <main class="main-content">
@@ -320,6 +327,90 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+// تشغيل فحص الديون فور تحميل واجهة النظام
+document.addEventListener("DOMContentLoaded", function() {
+    executeDebtVerification();
+});
+
+// نظام التنبيه المنبثق لمرة واحدة في اليوم
+function executeDebtVerification() {
+    const today = new Date().toISOString().split('T')[0];
+    const isCheckedToday = localStorage.getItem("debt_popup_verified_" + today);
+
+    // التحقق الصارم: يظهر فقط إذا لم يفتح البرنامج اليوم
+    if (!isCheckedToday) {
+        // جلب قائمة الديون المقيدة في نظامك (مصفوفة الديون المعتمدة لديك)
+        let debtsArray = typeof debts !== 'undefined' ? debts : (JSON.parse(localStorage.getItem("debts_list")) || []); 
+        let activeDueDebts = debtsArray.filter(d => d.dueDate === today || new Date(d.dueDate) <= new Date());
+
+        if (activeDueDebts.length > 0) {
+            triggerDebtModalWindow(activeDueDebts);
+            // قفل الإشعار لليوم الحالي لضمان عدم ظهوره مرة أخرى
+            localStorage.setItem("debt_popup_verified_" + today, "true");
+        }
+    }
+}
+
+// إنشاء النافذة المنبثقة وحقنها برمجياً في الواجهة
+function triggerDebtModalWindow(dueDebtsList) {
+    let modalStructure = `
+        <div id="debtPopupOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:10000; direction:rtl;">
+            <div style="background:#1a1a1a; color:#fff; padding:25px; border-radius:12px; width:90%; max-width:520px; border:2px solid #ff9800; box-shadow: 0px 4px 20px rgba(0,0,0,0.5); font-family: sans-serif;">
+                <h3 style="color:#ff9800; margin-top:0; font-size:20px; border-bottom:1px solid #333; padding-bottom:10px;"><i class="fas fa-bell"></i> تنبيه مستحقات السداد اليوم</h3>
+                <p style="font-size:14px; color:#ccc;">الزبائن التالية أسماؤهم حل موعد تسديد ديونهم:</p>
+                <div style="max-height:220px; overflow-y:auto; margin-bottom:20px; border:1px solid #222; border-radius:6px; background:#111;">
+                    <table style="width:100%; border-collapse:collapse; text-align:right; font-size:14px;">
+                        <thead>
+                            <tr style="background:#222; color:#ff9800; border-bottom:1px solid #333;">
+                                <th style="padding:10px;">اسم الزبون</th>
+                                <th style="padding:10px;">المبلغ المستحق</th>
+                                <th style="padding:10px; text-align:center;">إجراء السداد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+
+    dueDebtsList.forEach(item => {
+        modalStructure += `
+            <tr style="border-bottom:1px solid #222;">
+                <td style="padding:10px; color:#fff;">${item.customerName || item.name}</td>
+                <td style="padding:10px; color:#4caf50; font-weight:bold;">${item.amount || item.balance} د.ع</td>
+                <td style="padding:10px; text-align:center;">
+                    <button onclick="dispatchWhatsAppReminder('${item.phone}', '${item.customerName || item.name}', '${item.amount || item.balance}')" style="background:#25d366; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:5px;">
+                        <i class="fab fa-whatsapp"></i> تذكير زبون
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    modalStructure += `
+                        </tbody>
+                    </table>
+                </div>
+                <button onclick="dismissDebtModalWindow()" style="background:#ff9800; color:#111; border:none; padding:10px; border-radius:6px; cursor:pointer; width:100%; font-weight:bold; font-size:15px;">فهمت، إغلاق النافذة</button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalStructure);
+}
+
+function dismissDebtModalWindow() {
+    const targetModal = document.getElementById("debtPopupOverlay");
+    if (targetModal) targetModal.remove();
+}
+
+// دالة الربط السريع بنظام الواتساب للإرسال بضغطة زر
+function dispatchWhatsAppReminder(customerPhone, name, debtValue) {
+    const formattedText = `السلام عليكم سيد ${name}، نود تذكيركم بحلول موعد سداد الدين المتبقي والمقيد في نظام دجلة وقدره (${debtValue} د.ع). يرجى المراجعة والتسديد، شكراً لكم.`;
+    const cleanNumber = customerPhone.replace(/[^0-9]/g, ''); // تنظيف الرقم برمجياً
+    const whatsappLink = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(formattedText)}`;
+    window.open(whatsappLink, '_blank');
+}
+</script>
+
 </body>
 </html>
 
