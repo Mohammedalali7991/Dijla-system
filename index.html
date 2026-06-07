@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>المنظومة الذكية لإدارة المخازن ونقاط البيع</title>
+    <title>المنظومة الهندسية المتكاملة لإدارة المخازن ونقاط البيع والأقساط</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,23 +18,31 @@
         </div>
     </div>
 
+    <div id="detailsModal" class="modal-alert-overlay">
+        <div class="modal-alert-card" style="max-width: 600px; text-align: right;">
+            <h2 id="modalTitle" style="margin-bottom:15px; color:#1e272e;">تفاصيل</h2>
+            <div id="modalContent" class="table-container"></div>
+            <button onclick="closeDetailsModal()" class="btn-alert-close" style="background:#57606f;">إغلاق</button>
+        </div>
+    </div>
+
     <div id="loginScreen" class="screen active">
         <div class="login-container">
             <div class="login-header">
-                <i class="fas fa-cubes login-logo"></i>
-                <h2>منظومة المخازن والمبيعات</h2>
-                <p>سجل دخولك السريع للبدء</p>
+                <i class="fas fa-shield-alt login-logo"></i>
+                <h2>منظومة الحسابات والمخازن الذكية</h2>
+                <p>إدارة رأس المال، الأرباح، المبيعات الآجلة، والموردين</p>
             </div>
             <div class="login-form">
                 <div class="input-group">
-                    <label><i class="fas fa-store"></i> اسم المستخدم / الشركة</label>
-                    <input type="text" id="usernameInput" placeholder="أدخل اسمك أو اسم الشركة">
+                    <label><i class="fas fa-user"></i> اسم المستخدم / الشركة</label>
+                    <input type="text" id="usernameInput" placeholder="أدخل الاسم">
                 </div>
                 <div class="input-group">
-                    <label><i class="fas fa-mobile-alt"></i> رقم الهاتف</label>
+                    <label><i class="fas fa-phone"></i> رقم الهاتف</label>
                     <input type="tel" id="phoneInput" placeholder="07XXXXXXXX">
                 </div>
-                <button onclick="handleFastLogin()" class="btn-login">دخول مباشر للحساب <i class="fas fa-sign-in-alt"></i></button>
+                <button onclick="handleFastLogin()" class="btn-login">دخول مباشر وآمن <i class="fas fa-sign-in-alt"></i></button>
             </div>
         </div>
     </div>
@@ -46,7 +54,7 @@
                 <h1 id="appTitle">لوحة التحكم</h1>
             </div>
             <div class="header-left">
-                <span id="userInfo"><i class="fas fa-user-shield"></i> مستخدم</span>
+                <span id="userInfo"><i class="fas fa-user-circle"></i> مستخدم</span>
                 <button onclick="handleLogout()" class="btn-logout-top" title="تسجيل الخروج"><i class="fas fa-power-off"></i></button>
             </div>
         </header>
@@ -54,10 +62,12 @@
         <div class="app-layout">
             <aside id="sidebar" class="sidebar">
                 <nav class="sidebar-menu">
-                    <a href="#" onclick="switchTab('dashboard')" class="menu-item active" id="tab-dashboard"><i class="fas fa-th-large"></i> لوحة الإحصائيات</a>
-                    <a href="#" onclick="switchTab('pos')" class="menu-item" id="tab-pos"><i class="fas fa-shopping-cart"></i> شاشة المبيعات POS</a>
-                    <a href="#" onclick="switchTab('products')" class="menu-item" id="tab-products"><i class="fas fa-boxes"></i> إدارة المواد والرفوف</a>
-                    <a href="#" onclick="switchTab('reports')" class="menu-item" id="tab-reports"><i class="fas fa-chart-line"></i> سجل الفواتير والتقارير</a>
+                    <a href="#" onclick="switchTab('dashboard')" class="menu-item active" id="tab-dashboard"><i class="fas fa-chart-bar"></i> الإحصائيات والأرباح</a>
+                    <a href="#" onclick="switchTab('pos')" class="menu-item" id="tab-pos"><i class="fas fa-calculator"></i> شاشة البيع POS</a>
+                    <a href="#" onclick="switchTab('products')" class="menu-item" id="tab-products"><i class="fas fa-layer-group"></i> إدارة المواد والرفوف</a>
+                    <a href="#" onclick="switchTab('suppliers')" class="menu-item" id="tab-suppliers"><i class="fas fa-people-carry"></i> ديون وحسابات الموردين</a>
+                    <a href="#" onclick="switchTab('debts')" class="menu-item" id="tab-debts"><i class="fas fa-file-invoice-dollar"></i> أقساط الزبائن والديون</a>
+                    <a href="#" onclick="switchTab('reports')" class="menu-item" id="tab-reports"><i class="fas fa-history"></i> كشف الفواتير والتقارير</a>
                 </nav>
             </aside>
 
@@ -67,88 +77,40 @@
                     <div class="stats-grid">
                         <div class="stat-card">
                             <i class="fas fa-box icon-stat-blue"></i>
-                            <div><h3 id="statTotalItems">0</h3><p>المواد المسجلة</p></div>
+                            <div><h3 id="statTotalItems">0</h3><p>المواد الفريدة</p></div>
                         </div>
                         <div class="stat-card">
-                            <i class="fas fa-wallet icon-stat-green"></i>
-                            <div><h3 id="statTotalSales">0 د.ع</h3><p>مبيعات اليوم</p></div>
+                            <i class="fas fa-money-bill-wave icon-stat-green"></i>
+                            <div><h3 id="statTotalSales">0 د.ع</h3><p>المقبوضات النقدية اليوم</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-hand-holding-usd icon-stat-orange"></i>
+                            <div><h3 id="statTotalDebts">0 د.ع</h3><p>ديون الزبائن (لنا)</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-chart-line icon-stat-purple"></i>
+                            <div><h3 id="statNetProfit">0 د.ع</h3><p>صافي الأرباح المتوقعة</p></div>
                         </div>
                     </div>
-                </section>
 
-                <section id="content-products" class="tab-content">
                     <div class="card">
-                        <h2><i class="fas fa-edit"></i> إضافة وتحديث بيانات المواد</h2>
-                        <div class="form-grid">
-                            <input type="hidden" id="editProductId">
-                            <div class="input-group">
-                                <label>باركود المادة</label>
-                                <input type="text" id="prodBarcode" placeholder="امسح أو اكتب الباركود">
-                            </div>
-                            <div class="input-group">
-                                <label>اسم المادة</label>
-                                <input type="text" id="prodName" placeholder="اسم المادة الفعلي">
-                            </div>
-                            <div class="input-group">
-                                <label>التصنيف (قائمة أو كتابة حرة)</label>
-                                <input type="text" id="prodCategory" list="categoriesList" placeholder="اكتب أو اختر التصنيف">
-                                <datalist id="categoriesList"></datalist>
-                            </div>
-                            <div class="input-group">
-                                <label>الممر / الموقع</label>
-                                <input type="text" id="prodAisle" list="aislesList" placeholder="الممر...">
-                                <datalist id="aislesList"></datalist>
-                            </div>
-                            <div class="input-group">
-                                <label>الرف</label>
-                                <input type="text" id="prodShelf" list="shelvesList" placeholder="الرف...">
-                                <datalist id="shelvesList"></datalist>
-                            </div>
-                            <div class="input-group">
-                                <label>سعر الشراء (د.ع)</label>
-                                <input type="number" id="prodCost" placeholder="0">
-                            </div>
-                            <div class="input-group">
-                                <label>سعر البيع (د.ع)</label>
-                                <input type="number" id="prodPrice" placeholder="0">
-                            </div>
-                            <div class="input-group">
-                                <label>الكمية المتوفرة</label>
-                                <input type="number" id="prodQty" placeholder="0">
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button onclick="saveProduct()" class="btn-save"><i class="fas fa-save"></i> حفظ في النظام</button>
-                            <button onclick="clearProductForm()" class="btn-clear">تفريغ الحقول</button>
-                        </div>
-                    </div>
-
-                    <div class="card table-container">
-                        <h2><i class="fas fa-cubes"></i> المواد المتوفرة حالياً في المخزن</h2>
-                        <table class="responsive-table">
-                            <thead>
-                                <tr>
-                                    <th>المادة والباركود</th>
-                                    <th>التصنيف</th>
-                                    <th>الموقع داخل المخزن</th>
-                                    <th>الكمية</th>
-                                    <th>سعر البيع</th>
-                                    <th>إجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productsTableBody"></tbody>
-                        </table>
+                        <h2><i class="fas fa-bell" style="color:var(--orange-color);"></i> مركز التنبيهات الذكي للمخزون</h2>
+                        <ul id="dashboardNotifications" class="notification-list"></ul>
                     </div>
                 </section>
 
                 <section id="content-pos" class="tab-content">
                     <div class="pos-layout">
                         <div class="pos-search-box card">
-                            <input type="text" id="posSearchInput" oninput="searchProductForPOS()" placeholder="🔍 امسح الباركود أو اكتب اسم المادة للبيع الفوري...">
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="posSearchInput" oninput="searchProductForPOS()" placeholder="🔍 اكتب اسم المادة أو امسح الباركود للبيع الفوري...">
+                                <button class="btn-clear" style="background:#1e90ff;" onclick="showNotification('يرجى توجيه قارئ الباركود الخارجي أو استخدام البحث المباشر بالاسم لسرعة الاستجابة.', 'info')"><i class="fas fa-camera"></i></button>
+                            </div>
                             <div id="posSearchResults" class="search-results-dropdown"></div>
                         </div>
+                        
                         <div class="card">
-                            <h2><i class="fas fa-receipt"></i> الفاتورة المفتوحة حالياً</h2>
+                            <h2><i class="fas fa-receipt"></i> قائمة بيع المواد الحالية</h2>
                             <div class="table-container">
                                 <table class="responsive-table">
                                     <thead>
@@ -163,24 +125,189 @@
                                     <tbody id="cartTableBody"></tbody>
                                 </table>
                             </div>
+
+                            <div class="pos-billing-options">
+                                <h3><i class="fas fa-user-shield"></i> تفاصيل الدفع والعميل</h3>
+                                <div class="form-grid" style="margin-top: 12px;">
+                                    <div class="input-group">
+                                        <label>طريقة البيع</label>
+                                        <select id="posSaleType" onchange="togglePosDebtFields()">
+                                            <option value="cash">نقدًا (Cash)</option>
+                                            <option value="debt">بالأقساط / بالآجل (Credit)</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>اسم الزبون الكامل</label>
+                                        <input type="text" id="posCustomerName" placeholder="اسم الزبون">
+                                    </div>
+                                    <div class="input-group pos-debt-field">
+                                        <label>المبلغ الواصل (المقدمة د.ع)</label>
+                                        <input type="number" id="posAmountPaid" value="0" oninput="calculatePosRemaining()">
+                                    </div>
+                                    <div class="input-group pos-debt-field">
+                                        <label>المبلغ المتبقي (بالدين)</label>
+                                        <input type="number" id="posAmountRemaining" value="0" readonly style="background:#f1f2f6; font-weight:bold; color:var(--danger-color);">
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="cart-summary">
-                                <h3>المجموع النهائي: <span id="cartTotal">0</span> د.ع</h3>
-                                <button onclick="checkoutCart()" class="btn-checkout"><i class="fas fa-check-double"></i> إتمام وحفظ الفاتورة</button>
+                                <h3>الإجمالي النهائي للفاتورة: <span id="cartTotal">0</span> د.ع</h3>
+                                <button onclick="checkoutCart()" class="btn-checkout"><i class="fas fa-check-circle"></i> اعتماد الفاتورة وحفظ الحركات</button>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section id="content-reports" class="tab-content">
+                <section id="content-products" class="tab-content">
+                    <div class="card">
+                        <h2><i class="fas fa-box-open"></i> إضافة وتحديث مادة بالمستودع</h2>
+                        <div class="form-grid">
+                            <input type="hidden" id="editProductId">
+                            <div class="input-group">
+                                <label>الباركود العالمي / المحلي</label>
+                                <input type="text" id="prodBarcode" placeholder="امسح أو اكتب كود المادة">
+                            </div>
+                            <div class="input-group">
+                                <label>اسم المادة التجاري</label>
+                                <input type="text" id="prodName" placeholder="الاسم بدقة">
+                            </div>
+                            <div class="input-group">
+                                <label>التصنيف (حريّة كاملة بالكتابة)</label>
+                                <input type="text" id="prodCategory" list="categoriesList" placeholder="مثال: مواد غذائية">
+                                <datalist id="categoriesList"></datalist>
+                            </div>
+                            <div class="input-group">
+                                <label>الممر / الموقع</label>
+                                <input type="text" id="prodAisle" list="aislesList" placeholder="رقم أو اسم الممر">
+                                <datalist id="aislesList"></datalist>
+                            </div>
+                            <div class="input-group">
+                                <label>الرف التفصيلي</label>
+                                <input type="text" id="prodShelf" list="shelvesList" placeholder="رقم أو اسم الرف">
+                                <datalist id="shelvesList"></datalist>
+                            </div>
+                            <div class="input-group">
+                                <label>سعر الشراء (د.ع)</label>
+                                <input type="number" id="prodCost" placeholder="قيمة التكلفة الحقيقية">
+                            </div>
+                            <div class="input-group">
+                                <label>سعر البيع (د.ع)</label>
+                                <input type="number" id="prodPrice" placeholder="سعر البيع للجمهور">
+                            </div>
+                            <div class="input-group">
+                                <label>الكمية الحالية المتوفرة</label>
+                                <input type="number" id="prodQty" placeholder="العدد">
+                            </div>
+                            <div class="input-group">
+                                <label>حد الطلب / تنبيه نقص المخزون</label>
+                                <input type="number" id="prodMinQty" value="5">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button onclick="saveProduct()" class="btn-save"><i class="fas fa-save"></i> حفظ المادة في المخزن</button>
+                            <button onclick="clearProductForm()" class="btn-clear">تفريغ الاستمارة</button>
+                        </div>
+                    </div>
+
                     <div class="card table-container">
-                        <h2><i class="fas fa-history"></i> سجل فواتير المبيعات الصادرة</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:10px;">
+                            <h2><i class="fas fa-boxes"></i> جرد المستودعات الفعلي وموقع الرفوف</h2>
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="inventorySearch" oninput="renderProductsTable()" placeholder="🔍 تصفية سريعة بالاسم أو الرف..." style="padding:8px 12px; border:1px solid #ccc; border-radius:6px; outline:none;">
+                                <button onclick="printInventory()" class="btn-clear" style="background:#1e90ff; padding:8px 15px;"><i class="fas fa-print"></i> طباعة الجرد</button>
+                            </div>
+                        </div>
+                        <table class="responsive-table">
+                            <thead>
+                                <tr>
+                                    <th>المادة والباركود</th>
+                                    <th>التصنيف</th>
+                                    <th>الموقع داخل المخزن</th>
+                                    <th>الكمية والجرد</th>
+                                    <th>سعر البيع</th>
+                                    <th>إجراءات الهندسة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="content-suppliers" class="tab-content">
+                    <div class="card">
+                        <h2><i class="fas fa-truck"></i> تسجيل وتعديل بيانات مورد</h2>
+                        <div class="form-grid">
+                            <input type="hidden" id="editSupplierId">
+                            <div class="input-group">
+                                <label>اسم المورد / المكتب</label>
+                                <input type="text" id="supName" placeholder="الاسم">
+                            </div>
+                            <div class="input-group">
+                                <label>الشركة / المذخر / المعمل</label>
+                                <input type="text" id="supCompany" placeholder="اسم الشركة الموردة">
+                            </div>
+                            <div class="input-group">
+                                <label>رقم هاتف المورد</label>
+                                <input type="tel" id="supPhone" placeholder="رقم الاتصال">
+                            </div>
+                            <div class="input-group">
+                                <label>الديون المستحقة له (د.ع)</label>
+                                <input type="number" id="supDebt" value="0">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button onclick="saveSupplier()" class="btn-save" style="background:#1e90ff;"><i class="fas fa-user-check"></i> حفظ بيانات المورد</button>
+                            <button onclick="clearSupplierForm()" class="btn-clear">تفريغ</button>
+                        </div>
+                    </div>
+
+                    <div class="card table-container">
+                        <h2><i class="fas fa-list-alt"></i> سجل الموردين ومستحقاتهم المالية الجارية</h2>
+                        <table class="responsive-table">
+                            <thead>
+                                <tr>
+                                    <th>المورد / الشركة</th>
+                                    <th>رقم الهاتف</th>
+                                    <th>مطلوب للمورد (له)</th>
+                                    <th>إجراءات الدفع الجزئي والكلي</th>
+                                </tr>
+                            </thead>
+                            <tbody id="suppliersTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="content-debts" class="tab-content">
+                    <div class="card table-container">
+                        <h2><i class="fas fa-search-dollar"></i> مراقبة مبيعات الآجل وأقساط الزبائن المستحقة</h2>
                         <table class="responsive-table">
                             <thead>
                                 <tr>
                                     <th>رقم الفاتورة</th>
-                                    <th>تاريخ ووقت البيع</th>
-                                    <th>القيمة الإجمالية</th>
-                                    <th>الإجراء</th>
+                                    <th>اسم العميل / الزبون</th>
+                                    <th>القيمة الكلية</th>
+                                    <th>الواصل الحالي</th>
+                                    <th>الدين المتبقي (عليها)</th>
+                                    <th>عمليات تحصيل الأقساط</th>
+                                </tr>
+                            </thead>
+                            <tbody id="debtsTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="content-reports" class="tab-content">
+                    <div class="card table-container">
+                        <h2><i class="fas fa-folder-open"></i> أرشيف فواتير وحركات المنظومة الذكية</h2>
+                        <table class="responsive-table">
+                            <thead>
+                                <tr>
+                                    <th>رقم الفاتورة والعميل</th>
+                                    <th>التاريخ والوقت</th>
+                                    <th>نوع الحركة</th>
+                                    <th>مجموع القيمة</th>
+                                    <th>الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody id="salesTableBody"></tbody>
@@ -193,10 +320,6 @@
     </div>
 
     <script src="script.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(err => console.log("Service Worker Failed:", err));
-        }
-    </script>
 </body>
 </html>
+
